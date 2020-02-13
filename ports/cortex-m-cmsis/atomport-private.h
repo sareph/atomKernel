@@ -36,69 +36,73 @@
 /**
  * context saved automagically by exception entry
  */
-struct isr_stack {
-        uint32_t r0;
-        uint32_t r1;
-        uint32_t r2;
-        uint32_t r3;
-        uint32_t r12;
-        uint32_t lr;
-        uint32_t pc;
-        uint32_t psr;
+struct isr_stack
+{
+	uint32_t r0;
+	uint32_t r1;
+	uint32_t r2;
+	uint32_t r3;
+	uint32_t r12;
+	uint32_t lr;
+	uint32_t pc;
+	uint32_t psr;
 } __attribute__((packed));
 
-struct isr_fpu_stack {
-        uint32_t s0;
-        uint32_t s1;
-        uint32_t s2;
-        uint32_t s3;
-        uint32_t s4;
-        uint32_t s5;
-        uint32_t s6;
-        uint32_t s7;
-        uint32_t s8;
-        uint32_t s9;
-        uint32_t s10;
-        uint32_t s11;
-        uint32_t s12;
-        uint32_t s13;
-        uint32_t s14;
-        uint32_t s15;
-        uint32_t fpscr;
+struct isr_fpu_stack
+{
+	uint32_t s0;
+	uint32_t s1;
+	uint32_t s2;
+	uint32_t s3;
+	uint32_t s4;
+	uint32_t s5;
+	uint32_t s6;
+	uint32_t s7;
+	uint32_t s8;
+	uint32_t s9;
+	uint32_t s10;
+	uint32_t s11;
+	uint32_t s12;
+	uint32_t s13;
+	uint32_t s14;
+	uint32_t s15;
+	uint32_t fpscr;
 } __attribute__((packed));
 
 /**
  *  remaining context saved by task switch ISR
  */
-struct task_stack {
-        uint32_t r4;
-        uint32_t r5;
-        uint32_t r6;
-        uint32_t r7;
-        uint32_t r8;
-        uint32_t r9;
-        uint32_t r10;
-        uint32_t r11;
-        uint32_t exc_ret;
+struct task_stack
+{
+	uint32_t r4;
+	uint32_t r5;
+	uint32_t r6;
+	uint32_t r7;
+	uint32_t r8;
+	uint32_t r9;
+	uint32_t r10;
+	uint32_t r11;
+	uint32_t exc_ret;
 } __attribute__((packed));
 
-struct task_fpu_stack {
-        uint32_t s16;
-        uint32_t s17;
-        uint32_t s18;
-        uint32_t s19;
-        uint32_t s20;
-        uint32_t s21;
-        uint32_t s22;
-        uint32_t s23;
-        uint32_t s24;
-        uint32_t s25;
-        uint32_t s26;
-        uint32_t s27;
-        uint32_t s28;
-        uint32_t s29;
-        uint32_t s30;
-        uint32_t s31;
+struct task_fpu_stack
+{
+	uint32_t s16;
+	uint32_t s17;
+	uint32_t s18;
+	uint32_t s19;
+	uint32_t s20;
+	uint32_t s21;
+	uint32_t s22;
+	uint32_t s23;
+	uint32_t s24;
+	uint32_t s25;
+	uint32_t s26;
+	uint32_t s27;
+	uint32_t s28;
+	uint32_t s29;
+	uint32_t s30;
+	uint32_t s31;
 } __attribute__((packed));
 
 /**
@@ -109,11 +113,12 @@ struct task_fpu_stack {
  * pend_sv_handler will be called as soon as all other ISRs have returned,
  * do the real context switch and update running_tcb.
  */
-struct task_switch_info {
-    volatile struct atom_tcb *running_tcb;
-    volatile struct atom_tcb *next_tcb;
+struct task_switch_info
+{
+	volatile struct atom_tcb *running_tcb;
+	volatile struct atom_tcb *next_tcb;
 #if defined(__NEWLIB__)
-    struct _reent *reent;
+	struct _reent *reent;
 #endif
 } __attribute__((packed));
 

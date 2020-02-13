@@ -77,8 +77,9 @@
  * struct _reent.
  */
 #if defined(__NEWLIB__) && ATOM_NEWLIB_REENT
-struct cortex_port_priv {
-    struct _reent reent;
+struct cortex_port_priv
+{
+	struct _reent reent;
 };
 
 #define THREAD_PORT_PRIV    struct cortex_port_priv port_priv
