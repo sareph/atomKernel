@@ -245,7 +245,7 @@ void __attribute__((noinline)) archContextSwitch(ATOM_TCB *old_tcb_ptr __maybe_u
 	}
 }
 
-void sys_tick_handler(void)
+void atomOSSysTickHander(void)
 {
 	/* Call the interrupt entry routine */
 	atomIntEnter();

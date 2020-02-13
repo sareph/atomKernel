@@ -58,7 +58,7 @@
 
 #define assert_static(e) \
    do { \
-      enum { assert_static__ = 1/(e) }; \
+      enum { assert_static__ = 1 / (e) } ; \
    } while (0)
 
 /**
@@ -82,6 +82,8 @@ struct cortex_port_priv {
 
 #define THREAD_PORT_PRIV    struct cortex_port_priv port_priv
 #endif
+
+void atomOSSysTickHander(void);
 
 /* Uncomment to enable stack-checking */
 /* #define ATOM_STACK_CHECKING */
