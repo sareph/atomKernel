@@ -145,6 +145,7 @@
 
 
 #include "atom.h"
+#include "atomidle.h"
 
 
 /* Global data */
@@ -194,8 +195,6 @@ static int atomIntCnt = 0;
 
 /* Forward declarations */
 static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb);
-static int atomIdleThread(void* data);
-
 
 /**
  * \b atomSched
@@ -220,8 +219,6 @@ static int atomIdleThread(void* data);
  *
  * @return None
  */
-
-int atomPortPSV();
 
 void atomSched(uint8_t timer_tick)
 {
@@ -776,39 +773,6 @@ void atomKernelStart(void)
 	}
 
 }
-
-__weak void atomIdleHook()
-{
-}
-
-/**
- * \b atomIdleThread
- *
- * Entry point for idle thread.
- *
- * This thread must always be present, and will be the thread executed when
- * no other threads are ready to run. It must not call any library routines
- * which would cause it to block.
- *
- * @param[in] param Unused (optional thread entry parameter)
- *
- * @return None
- */
-static int atomIdleThread(void* param)
-{
-	/* Compiler warning  */
-	param = param;
-
-	/* Loop forever */
-	while (1)
-	{
-		/** \todo Provide user idle hooks*/
-		atomIdleHook();
-	}
-	
-	return 0;
-}
-
 
 /**
  * \b tcbEnqueuePriority
