@@ -35,7 +35,7 @@ extern "C" {
 #endif
 
 #include "atomport.h"
-
+#include "atomdefs.h"
 
 /* Callback function prototype */
 typedef void ( * TIMER_CB_FUNC ) ( POINTER cb_data ) ;
@@ -56,9 +56,9 @@ typedef struct atom_timer
 
 /* Function prototypes */
 
-extern uint8_t atomTimerRegister (ATOM_TIMER *timer_ptr);
-extern uint8_t atomTimerCancel (ATOM_TIMER *timer_ptr);
-extern uint8_t atomTimerDelay (uint32_t ticks);
+extern atom_status_t atomTimerRegister(ATOM_TIMER *timer_ptr);
+extern atom_status_t atomTimerCancel(ATOM_TIMER *timer_ptr);
+extern atom_status_t atomTimerDelay(uint32_t ticks);
 extern uint32_t atomTimeGet (void);
 extern void atomTimeSet (uint32_t new_time);
 

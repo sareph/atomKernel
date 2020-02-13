@@ -122,9 +122,9 @@ static void atomTimerDelayCallback (POINTER cb_data);
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameters
  */
-uint8_t atomTimerRegister (ATOM_TIMER *timer_ptr)
+atom_status_t atomTimerRegister(ATOM_TIMER *timer_ptr)
 {
-    uint8_t status;
+	atom_status_t status;
     CRITICAL_STORE;
 
     /* Parameter check */
@@ -187,9 +187,9 @@ uint8_t atomTimerRegister (ATOM_TIMER *timer_ptr)
  * @retval ATOM_ERR_PARAM Bad parameters
  * @retval ATOM_ERR_NOT_FOUND Timer registration was not found
  */
-uint8_t atomTimerCancel (ATOM_TIMER *timer_ptr)
+atom_status_t atomTimerCancel(ATOM_TIMER *timer_ptr)
 {
-    uint8_t status = ATOM_ERR_NOT_FOUND;
+	atom_status_t status = ATOM_ERR_NOT_FOUND;
     ATOM_TIMER *prev_ptr, *next_ptr;
     CRITICAL_STORE;
 
@@ -324,13 +324,13 @@ void atomTimerTick (void)
  * @retval ATOM_ERR_PARAM Bad parameter (ticks must be non-zero)
  * @retval ATOM_ERR_CONTEXT Not called from thread context
  */
-uint8_t atomTimerDelay (uint32_t ticks)
+atom_status_t atomTimerDelay (uint32_t ticks)
 {
     ATOM_TCB *curr_tcb_ptr;
     ATOM_TIMER timer_cb;
     DELAY_TIMER timer_data;
     CRITICAL_STORE;
-    uint8_t status;
+	atom_status_t status;
 
     /* Get the current TCB  */
     curr_tcb_ptr = atomCurrentContext();

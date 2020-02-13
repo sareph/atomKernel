@@ -125,9 +125,9 @@ static void atomSemTimerCallback (POINTER cb_data);
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameters
  */
-uint8_t atomSemCreate (ATOM_SEM *sem, uint8_t initial_count)
+atom_status_t atomSemCreate(ATOM_SEM *sem, uint8_t initial_count)
 {
-    uint8_t status;
+	atom_status_t status;
 
     /* Parameter check */
     if (sem == NULL)
@@ -171,9 +171,9 @@ uint8_t atomSemCreate (ATOM_SEM *sem, uint8_t initial_count)
  * @retval ATOM_ERR_QUEUE Problem putting a woken thread on the ready queue
  * @retval ATOM_ERR_TIMER Problem cancelling a timeout on a woken thread
  */
-uint8_t atomSemDelete (ATOM_SEM *sem)
+atom_status_t atomSemDelete(ATOM_SEM *sem)
 {
-    uint8_t status;
+	atom_status_t status;
     CRITICAL_STORE;
     ATOM_TCB *tcb_ptr;
     uint8_t woken_threads = FALSE;
@@ -310,10 +310,10 @@ uint8_t atomSemDelete (ATOM_SEM *sem)
  * @retval ATOM_ERR_QUEUE Problem putting the thread on the suspend queue
  * @retval ATOM_ERR_TIMER Problem registering the timeout
  */
-uint8_t atomSemGet (ATOM_SEM *sem, int32_t timeout)
+atom_status_t atomSemGet(ATOM_SEM *sem, int32_t timeout)
 {
     CRITICAL_STORE;
-    uint8_t status;
+	atom_status_t status;
     SEM_TIMER timer_data;
     ATOM_TIMER timer_cb;
     ATOM_TCB *curr_tcb_ptr;
@@ -494,9 +494,9 @@ uint8_t atomSemGet (ATOM_SEM *sem, int32_t timeout)
  * @retval ATOM_ERR_QUEUE Problem putting a woken thread on the ready queue
  * @retval ATOM_ERR_TIMER Problem cancelling a timeout for a woken thread
  */
-uint8_t atomSemPut (ATOM_SEM * sem)
+atom_status_t atomSemPut(ATOM_SEM * sem)
 {
-    uint8_t status;
+	atom_status_t status;
     CRITICAL_STORE;
     ATOM_TCB *tcb_ptr;
 
@@ -604,9 +604,9 @@ uint8_t atomSemPut (ATOM_SEM * sem)
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameter
  */
-uint8_t atomSemResetCount (ATOM_SEM *sem, uint8_t count)
+atom_status_t atomSemResetCount(ATOM_SEM *sem, uint8_t count)
 {
-    uint8_t status;
+	atom_status_t status;
 
     /* Parameter check */
     if (sem == NULL)

@@ -36,12 +36,17 @@ extern "C" {
 
 #include "atomtimer.h"
 #include "atomport.h"
+#include "atomconfig.h"
 
 /* Data types */
 
 /* Forward declaration */
 struct atom_tcb;
 
+#include "atomdefs.h"
+	
+typedef atom_status_t (*_fnAtomThread)(void *ptr);
+	
 typedef struct atom_tcb
 {
     /*
@@ -55,29 +60,34 @@ typedef struct atom_tcb
     THREAD_PORT_PRIV;
 #endif
 
-    /* Thread priority (0-255) */
-    uint8_t priority;
-
     /* Thread entry point and parameter */
-    void (*entry_point)(uint32_t);
-    uint32_t entry_param;
-
+	_fnAtomThread entry_point;
+    void* entry_param;
+	atom_status_t return_value;
+	
     /* Queue pointers */
     struct atom_tcb *prev_tcb;    /* Previous TCB in doubly-linked TCB list */
     struct atom_tcb *next_tcb;    /* Next TCB in doubly-linked list */
 
     /* Suspension data */
-    uint8_t suspended;            /* TRUE if task is currently suspended */
-    uint8_t suspend_wake_status;  /* Status returned to woken suspend calls */
     ATOM_TIMER *suspend_timo_cb;  /* Callback registered for suspension timeouts */
-    uint8_t terminated;           /* TRUE if task is being terminated (run to completion) */
 
     /* Details used if thread stack-checking is required */
 #ifdef ATOM_STACK_CHECKING
     POINTER stack_bottom;         /* Pointer to bottom of stack allocation */
     uint32_t stack_size;          /* Size of stack allocation in bytes */
 #endif
-
+	uint32_t	suspend_option; /* yujs used for event to save the event flags  get option*/
+	uint32_t	suspend_info; /* Remember which event flags we are looking for. requested_flags yujs */
+	
+	atom_status_t suspend_wake_status; /* Status returned to woken suspend calls */
+	atom_prio_t priority; /* Thread priority (-1 - 127) */
+#if ATOM_KERNEL_TCB_AGEING
+	atom_prio_t base_priority; /* Base thread priority (0 - 127) */
+#endif
+	int8_t terminated; /* TRUE if task is being terminated (run to completion) */
+	int8_t suspended; /* TRUE if task is currently suspended */
+	
 } ATOM_TCB;
 
 
@@ -92,25 +102,27 @@ extern uint8_t atomOSStarted;
 
 /* Error values */
 
-#define ATOM_OK                 0
-#define ATOM_ERROR              1
-#define ATOM_TIMEOUT            2
-#define ATOM_WOULDBLOCK         3
-#define ATOM_ERR_CONTEXT        200
-#define ATOM_ERR_PARAM          201
-#define ATOM_ERR_DELETED        202
-#define ATOM_ERR_OVF            203
-#define ATOM_ERR_QUEUE          204
-#define ATOM_ERR_TIMER          205
-#define ATOM_ERR_NOT_FOUND      206
-#define ATOM_ERR_OWNERSHIP      207
+#define ATOM_OK                  0
+#define ATOM_ERROR              -1
+#define ATOM_TIMEOUT            -2
+#define ATOM_WOULDBLOCK         -3
+#define ATOM_ERR_CONTEXT        -200
+#define ATOM_ERR_PARAM          -201
+#define ATOM_ERR_DELETED        -202
+#define ATOM_ERR_OVF            -203
+#define ATOM_ERR_QUEUE          -204
+#define ATOM_ERR_TIMER          -205
+#define ATOM_ERR_NOT_FOUND      -206
+#define ATOM_ERR_OWNERSHIP      -207
+#define ATOM_ERR_RUNNING        -208
 
 /* Idle thread priority (lowest) */
-#define IDLE_THREAD_PRIORITY    255
+#define IDLE_THREAD_PRIORITY    127
+#define IDLE_MINIMUM_PRIORITY   127
 
 
 /* Function prototypes */
-extern uint8_t atomOSInit (void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size, uint8_t idle_thread_stack_check);
+extern atom_status_t atomOSInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size, uint8_t idle_thread_stack_check);
 extern void atomOSStart (void);
 
 extern void atomSched (uint8_t timer_tick);
@@ -121,15 +133,16 @@ extern void atomIntExit (uint8_t timer_tick);
 extern uint8_t tcbEnqueuePriority (ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr);
 extern ATOM_TCB *tcbDequeueHead (ATOM_TCB **tcb_queue_ptr);
 extern ATOM_TCB *tcbDequeueEntry (ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr);
-extern ATOM_TCB *tcbDequeuePriority (ATOM_TCB **tcb_queue_ptr, uint8_t priority);
+extern ATOM_TCB *tcbDequeuePriority(ATOM_TCB **tcb_queue_ptr, atom_prio_t priority);
 
 extern ATOM_TCB *atomCurrentContext (void);
 
-extern uint8_t atomThreadCreate (ATOM_TCB *tcb_ptr, uint8_t priority, void (*entry_point)(uint32_t), uint32_t entry_param, void *stack_bottom, uint32_t stack_size, uint8_t stack_check);
-extern uint8_t atomThreadStackCheck (ATOM_TCB *tcb_ptr, uint32_t *used_bytes, uint32_t *free_bytes);
+extern atom_status_t atomThreadCreate(ATOM_TCB *tcb_ptr, atom_prio_t priority, _fnAtomThread entry_point, void* entry_param, void *stack_bottom, uint32_t stack_size, uint8_t stack_check);
+extern atom_status_t atomThreadDestroy(ATOM_TCB *tcb_ptr, int *ret_value);
+extern atom_status_t atomThreadStackCheck(ATOM_TCB *tcb_ptr, uint32_t *used_bytes, uint32_t *free_bytes);
 
 extern void archContextSwitch (ATOM_TCB *old_tcb_ptr, ATOM_TCB *new_tcb_ptr);
-extern void archThreadContextInit (ATOM_TCB *tcb_ptr, void *stack_top, void (*entry_point)(uint32_t), uint32_t entry_param);
+extern void archThreadContextInit(ATOM_TCB *tcb_ptr, void *stack_top, _fnAtomThread entry_point, void* entry_param);
 extern void archFirstThreadRestore(ATOM_TCB *new_tcb_ptr);
 
 extern void atomTimerTick (void);

@@ -140,9 +140,9 @@ static void atomMutexTimerCallback (POINTER cb_data);
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameters
  */
-uint8_t atomMutexCreate (ATOM_MUTEX *mutex)
+atom_status_t atomMutexCreate(ATOM_MUTEX *mutex)
 {
-    uint8_t status;
+	atom_status_t status;
 
     /* Parameter check */
     if (mutex == NULL)
@@ -189,9 +189,9 @@ uint8_t atomMutexCreate (ATOM_MUTEX *mutex)
  * @retval ATOM_ERR_QUEUE Problem putting a woken thread on the ready queue
  * @retval ATOM_ERR_TIMER Problem cancelling a timeout on a woken thread
  */
-uint8_t atomMutexDelete (ATOM_MUTEX *mutex)
+atom_status_t atomMutexDelete(ATOM_MUTEX *mutex)
 {
-    uint8_t status;
+	atom_status_t status;
     CRITICAL_STORE;
     ATOM_TCB *tcb_ptr;
     uint8_t woken_threads = FALSE;
@@ -336,10 +336,10 @@ uint8_t atomMutexDelete (ATOM_MUTEX *mutex)
  * @retval ATOM_ERR_TIMER Problem registering the timeout
  * @retval ATOM_ERR_OVF The recursive lock count would have overflowed (>255)
  */
-uint8_t atomMutexGet (ATOM_MUTEX *mutex, int32_t timeout)
+atom_status_t atomMutexGet(ATOM_MUTEX *mutex, int32_t timeout)
 {
     CRITICAL_STORE;
-    uint8_t status;
+	atom_status_t status;
     MUTEX_TIMER timer_data;
     ATOM_TIMER timer_cb;
     ATOM_TCB *curr_tcb_ptr;
@@ -542,9 +542,9 @@ uint8_t atomMutexGet (ATOM_MUTEX *mutex, int32_t timeout)
  * @retval ATOM_ERR_TIMER Problem cancelling a timeout for a woken thread
  * @retval ATOM_ERR_OWNERSHIP Attempt to unlock mutex not owned by this thread
  */
-uint8_t atomMutexPut (ATOM_MUTEX * mutex)
+atom_status_t atomMutexPut(ATOM_MUTEX * mutex)
 {
-    uint8_t status;
+	atom_status_t status;
     CRITICAL_STORE;
     ATOM_TCB *tcb_ptr, *curr_tcb_ptr;
 

@@ -110,8 +110,8 @@ typedef struct queue_timer
 
 /* Forward declarations */
 
-static uint8_t queue_remove (ATOM_QUEUE *qptr, uint8_t* msgptr);
-static uint8_t queue_insert (ATOM_QUEUE *qptr, uint8_t* msgptr);
+static atom_status_t queue_remove(ATOM_QUEUE *qptr, uint8_t* msgptr);
+static atom_status_t queue_insert(ATOM_QUEUE *qptr, uint8_t* msgptr);
 static void atomQueueTimerCallback (POINTER cb_data);
 
 
@@ -142,9 +142,9 @@ static void atomQueueTimerCallback (POINTER cb_data);
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameters
  */
-uint8_t atomQueueCreate (ATOM_QUEUE *qptr, uint8_t *buff_ptr, uint32_t unit_size, uint32_t max_num_msgs)
+atom_status_t atomQueueCreate(ATOM_QUEUE *qptr, uint8_t *buff_ptr, uint32_t unit_size, uint32_t max_num_msgs)
 {
-    uint8_t status;
+	atom_status_t status;
 
     /* Parameter check */
     if ((qptr == NULL) || (buff_ptr == NULL))
@@ -201,9 +201,9 @@ uint8_t atomQueueCreate (ATOM_QUEUE *qptr, uint8_t *buff_ptr, uint32_t unit_size
  * @retval ATOM_ERR_QUEUE Problem putting a woken thread on the ready queue
  * @retval ATOM_ERR_TIMER Problem cancelling a timeout on a woken thread
  */
-uint8_t atomQueueDelete (ATOM_QUEUE *qptr)
+atom_status_t atomQueueDelete(ATOM_QUEUE *qptr)
 {
-    uint8_t status;
+	atom_status_t status;
     CRITICAL_STORE;
     ATOM_TCB *tcb_ptr;
     uint8_t woken_threads = FALSE;
@@ -333,10 +333,10 @@ uint8_t atomQueueDelete (ATOM_QUEUE *qptr)
  * @retval ATOM_ERR_QUEUE Problem putting the thread on the suspend queue
  * @retval ATOM_ERR_TIMER Problem registering the timeout
  */
-uint8_t atomQueueGet (ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
+atom_status_t atomQueueGet(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
 {
     CRITICAL_STORE;
-    uint8_t status;
+	atom_status_t status;
     QUEUE_TIMER timer_data;
     ATOM_TIMER timer_cb;
     ATOM_TCB *curr_tcb_ptr;
@@ -539,10 +539,10 @@ uint8_t atomQueueGet (ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
  * @retval ATOM_ERR_QUEUE Problem putting the thread on the suspend queue
  * @retval ATOM_ERR_TIMER Problem registering the timeout
  */
-uint8_t atomQueuePut (ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
+atom_status_t atomQueuePut(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
 {
     CRITICAL_STORE;
-    uint8_t status;
+	atom_status_t status;
     QUEUE_TIMER timer_data;
     ATOM_TIMER timer_cb;
     ATOM_TCB *curr_tcb_ptr;
@@ -784,9 +784,9 @@ static void atomQueueTimerCallback (POINTER cb_data)
  * @retval ATOM_ERR_QUEUE Problem putting a thread on the ready queue
  * @retval ATOM_ERR_TIMER Problem cancelling a timeout
  */
-static uint8_t queue_remove (ATOM_QUEUE *qptr, uint8_t* msgptr)
+static atom_status_t queue_remove(ATOM_QUEUE *qptr, uint8_t* msgptr)
 {
-    uint8_t status;
+	atom_status_t status;
     ATOM_TCB *tcb_ptr;
 
     /* Check parameters */
@@ -878,9 +878,9 @@ static uint8_t queue_remove (ATOM_QUEUE *qptr, uint8_t* msgptr)
  * @retval ATOM_ERR_QUEUE Problem putting a thread on the ready queue
  * @retval ATOM_ERR_TIMER Problem cancelling a timeout
  */
-static uint8_t queue_insert (ATOM_QUEUE *qptr, uint8_t* msgptr)
+static atom_status_t queue_insert(ATOM_QUEUE *qptr, uint8_t* msgptr)
 {
-    uint8_t status;
+	atom_status_t status;
     ATOM_TCB *tcb_ptr;
 
     /* Check parameters */
