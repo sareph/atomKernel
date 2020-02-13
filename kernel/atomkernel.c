@@ -185,7 +185,8 @@ static ATOM_TCB idle_tcb;
 
 /* Number of nested interrupts */
 static int atomIntCnt = 0;
-
+static int lContextSwitchTotal;
+static int lContextSwitchIdle;
 
 /* Constants */
 
@@ -195,6 +196,23 @@ static int atomIntCnt = 0;
 
 /* Forward declarations */
 static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb);
+
+/**
+ * \b atomGetIdleTime
+ *
+ * Gets time CPU spent in idle thread since last call
+ *
+ * @return percetage of context switches to idle thread
+ */
+
+int atomGetIdleTime()
+{
+	int p = (lContextSwitchIdle * 100) / lContextSwitchTotal; 
+	lContextSwitchIdle = 0;
+	lContextSwitchTotal = 0;
+	return p;
+}
+
 
 /**
  * \b atomSched
@@ -310,6 +328,13 @@ void atomSched(uint8_t timer_tick)
 		}
 	}
 
+	lContextSwitchTotal++;
+	
+	if (curr_tcb == &idle_tcb)
+	{
+		lContextSwitchIdle++;
+	}
+	
 	/* Exit critical section */
 	CRITICAL_END();
 }
@@ -345,13 +370,14 @@ static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb)
 	 * if a thread goes into suspend but is unsuspended again before
 	 * it is fully scheduled out.
 	 */
+	
 	if (old_tcb != new_tcb)
 	{
 		/* Set the new currently-running thread pointer */
 		curr_tcb = new_tcb;
 	    
 #if ATOM_KERNEL_TCB_AGEING
-		/* Reset thread prioriti to it's original value */
+		/* Reset thread priority to it's original value */
 		curr_tcb->priority = curr_tcb->base_priority;
 #endif
 		/* Call the architecture-specific context switch */

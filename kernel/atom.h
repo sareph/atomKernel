@@ -136,6 +136,8 @@ extern void atomSched (uint8_t timer_tick);
 
 extern void atomIntEnter (void);
 extern void atomIntExit (uint8_t timer_tick);
+	
+extern int atomGetIdleTime();
 
 extern uint8_t tcbEnqueuePriority (ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr);
 extern ATOM_TCB *tcbDequeueHead (ATOM_TCB **tcb_queue_ptr);
@@ -152,6 +154,7 @@ extern void archContextSwitch (ATOM_TCB *old_tcb_ptr, ATOM_TCB *new_tcb_ptr);
 extern void archThreadContextInit(ATOM_TCB *tcb_ptr, void *stack_top, _fnAtomThread entry_point, void* entry_param);
 extern void archFirstThreadRestore(ATOM_TCB *new_tcb_ptr);
 
+extern atom_status_t atomSleep(uint32_t ms);
 extern void atomTimerTick (void);
 
 #ifdef __cplusplus
