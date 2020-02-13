@@ -305,6 +305,29 @@ void atomTimerTick(void)
 	}
 }
 
+/**
+ * \b atomSleep
+ *
+ * Suspend a thread for the given number of milliseconds.
+ *
+ * Note that the minimum wakeup time will be no less than ms per system tick
+ * and its rounded up to nearest system tick time.
+ * Therefore, if ms is 1 and ystem tick time is 10ms per tick, thread
+ * will sleep for 10ms.
+ *
+ * This function can only be called from thread context.
+ *
+ * @param[in] ms Number of ms to delay (must be > 0)
+ *
+ * @retval ATOM_OK Successful delay
+ * @retval ATOM_ERR_PARAM Bad parameter (ticks must be non-zero)
+ * @retval ATOM_ERR_CONTEXT Not called from thread context
+ */
+atom_status_t atomSleep(uint32_t ms)
+{
+	ms /= SYSTEM_MS_PER_TICK;
+	return atomTimerDelay(ms);
+}
 
 /**
  * \b atomTimerDelay
