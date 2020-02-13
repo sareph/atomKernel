@@ -408,7 +408,7 @@ atom_status_t atomThreadDestroy(ATOM_TCB *tcb_ptr, int *ret_value)
  * @retval ATOM_ERR_PARAM Bad parameters
  * @retval ATOM_ERR_QUEUE Error putting the thread on the ready queue
  */
-atom_status_t atomThreadCreate(ATOM_TCB *tcb_ptr, atom_prio_t priority, _fnAtomThread entry_point, void* entry_param, void *stack_bottom, uint32_t stack_size, uint8_t stack_check)
+atom_status_t atomThreadCreate(ATOM_TCB *tcb_ptr, atom_prio_t priority, _fnAtomThread entry_point, void* entry_param, void *stack_bottom, uint32_t stack_size)
 {
 	CRITICAL_STORE;
 	atom_status_t status;
@@ -460,8 +460,7 @@ atom_status_t atomThreadCreate(ATOM_TCB *tcb_ptr, atom_prio_t priority, _fnAtomT
 		 * compiled out if not desired.
 		 */
 #ifdef ATOM_STACK_CHECKING
-		         /* Set up stack-checking if enabled for this thread */
-		if (stack_check)
+         /* Set up stack-checking if enabled */
 		{
 			/* Store the stack details for use by the stack-check function */
 			tcb_ptr->stack_bottom = stack_bottom;
@@ -700,7 +699,7 @@ ATOM_TCB *atomCurrentContext(void)
  * @retval ATOM_OK Success
  * @retval ATOM_ERROR Initialisation error
  */
-atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size, uint8_t idle_thread_stack_check)
+atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size)
 {
 	atom_status_t status;
 
@@ -715,8 +714,7 @@ atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_threa
 		atomIdleThread,
 		0,
 		idle_thread_stack_bottom,
-		idle_thread_stack_size,
-		idle_thread_stack_check);
+		idle_thread_stack_size);
 
 	/* Return status */
 	return (status);

@@ -123,7 +123,7 @@ extern uint8_t atomOSStarted;
 
 
 /* Function prototypes */
-extern atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size, uint8_t idle_thread_stack_check);
+extern atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size);
 extern void atomKernelStart (void);
 
 extern void atomSched (uint8_t timer_tick);
@@ -138,7 +138,7 @@ extern ATOM_TCB *tcbDequeuePriority(ATOM_TCB **tcb_queue_ptr, atom_prio_t priori
 
 extern ATOM_TCB *atomCurrentContext (void);
 
-extern atom_status_t atomThreadCreate(ATOM_TCB *tcb_ptr, atom_prio_t priority, _fnAtomThread entry_point, void* entry_param, void *stack_bottom, uint32_t stack_size, uint8_t stack_check);
+extern atom_status_t atomThreadCreate(ATOM_TCB *tcb_ptr, atom_prio_t priority, _fnAtomThread entry_point, void* entry_param, void *stack_bottom, uint32_t stack_size);
 extern atom_status_t atomThreadDestroy(ATOM_TCB *tcb_ptr, int *ret_value);
 extern atom_status_t atomThreadStackCheck(ATOM_TCB *tcb_ptr, uint32_t *used_bytes, uint32_t *free_bytes);
 

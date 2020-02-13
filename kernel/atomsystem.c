@@ -9,15 +9,13 @@ static size_t lMasterStackSize;
 static uint8_t lMasterStack[ATOM_SYSTEM_STACK_SIZE] ATOM_SYSTEM_STACK_ATTRIBUTE;
 static ATOM_TCB lTCBs[ATOM_SYSTEM_MAX_THREADS] ATOM_SYSTEM_STACK_ATTRIBUTE;
 static size_t lCurrentTcb;
-static int_fast8_t lStackChecking;
 
-atom_status_t atomOSInit(size_t idleThreadStack, size_t stackChecking)
+atom_status_t atomOSInit(size_t idleThreadStack)
 {
 	lMasterStackSize = 0;
 	lCurrentTcb = 0;
-	lStackChecking = stackChecking;
 	
-	atom_status_t ret = atomKernelInit((void*)&lMasterStack[lMasterStackSize], idleThreadStack, lStackChecking);
+	atom_status_t ret = atomKernelInit((void*)&lMasterStack[lMasterStackSize], idleThreadStack);
 	lMasterStackSize += idleThreadStack;
 	return ret;
 }
@@ -30,9 +28,8 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
 	{
 		return ATOM_ERR_NO_MEM;
 	}
-	
 
-	if ((ret = atomThreadCreate(&lTCBs[lCurrentTcb], priority, entryPoint, param, (void*)&lMasterStack[lMasterStackSize], threadStack, lStackChecking)) != ATOM_OK)
+	if ((ret = atomThreadCreate(&lTCBs[lCurrentTcb], priority, entryPoint, param, (void*)&lMasterStack[lMasterStackSize], threadStack)) != ATOM_OK)
 	{
 		return ret;
 	}
