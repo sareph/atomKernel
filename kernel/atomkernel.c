@@ -703,7 +703,7 @@ ATOM_TCB *atomCurrentContext (void)
  * @retval ATOM_OK Success
  * @retval ATOM_ERROR Initialisation error
  */
-atom_status_t atomOSInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size, uint8_t idle_thread_stack_check)
+atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size, uint8_t idle_thread_stack_check)
 {
 	atom_status_t status;
 
@@ -741,7 +741,7 @@ atom_status_t atomOSInit(void *idle_thread_stack_bottom, uint32_t idle_thread_st
  *
  * @return None
  */
-void atomOSStart (void)
+void atomKernelStart (void)
 {
     ATOM_TCB *new_tcb;
 
