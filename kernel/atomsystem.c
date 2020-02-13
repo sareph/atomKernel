@@ -12,6 +12,17 @@ static uint8_t lMasterStack[ATOM_SYSTEM_STACK_SIZE] ATOM_SYSTEM_STACK_ATTRIBUTE;
 static ATOM_TCB lTCBs[ATOM_SYSTEM_MAX_THREADS] ATOM_SYSTEM_STACK_ATTRIBUTE;
 static size_t lCurrentTcb;
 
+/**
+ * \b atomOSInit
+ *
+ * Initializes main stack & tcb's.
+ *
+ * @param[in] idleThreadStack Idle thread stack size
+ * @param[in] idleThreadParam Idle thread hook param
+ *
+ * @return None
+ */
+
 atom_status_t atomOSInit(size_t idleThreadStack, void *idleThreadParam)
 {
 	atom_status_t ret;
@@ -34,6 +45,24 @@ atom_status_t atomOSInit(size_t idleThreadStack, void *idleThreadParam)
 	lMasterStackSize += idleThreadStack;
 	return ret;
 }
+
+/**
+ * \b atomOSCreateThread
+ *
+ * Creates thread using system stack & tcb
+ *
+ * @param[in] threadStack Idle thread stack size
+ * @param[in] priority Idle thread hook param
+ * @param[in] threadParam Idle thread hook param
+ * @param[in] entryPoint Thread entry point
+ * @param[in] param Param for the entry point
+ * @param[out] pTcb Pointer to TCB for created thread
+ *
+ * @retval >=0 Sucess & thread index
+ * @retval ATOM_ERR_PARAM Bad parameters
+ * @retval ATOM_ERR_NO_MEM System stack exhausted
+ * @retval ATOM_ERR_QUEUE Error putting the thread on the ready queue
+ */
 
 atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAtomThread entryPoint, void *param, ATOM_TCB **pTcb)
 {
@@ -62,6 +91,15 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
 	lCurrentTcb++;
 	return ret;
 }
+
+/**
+ * \b atomOSStart
+ *
+ * Starts the OS
+ *
+ * @return None
+ */
+
 
 void atomOSStart(void)
 {

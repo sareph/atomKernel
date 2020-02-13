@@ -202,7 +202,8 @@ static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb);
 /**
  * \b atomGetIdleTime
  *
- * Gets time CPU spent in idle thread since last call
+ * Gets time CPU spent in idle thread since last call.
+ * This does not include time spent in ISRs for now.
  *
  * @return mili percetage of context switches to idle thread
  */
