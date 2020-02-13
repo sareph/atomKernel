@@ -202,12 +202,12 @@ static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb);
  *
  * Gets time CPU spent in idle thread since last call
  *
- * @return percetage of context switches to idle thread
+ * @return mili percetage of context switches to idle thread
  */
 
 int atomGetIdleTime()
 {
-	int p = (lContextSwitchIdle * 100) / lContextSwitchTotal; 
+	int p = (lContextSwitchIdle * 100000) / lContextSwitchTotal; 
 	lContextSwitchIdle = 0;
 	lContextSwitchTotal = 0;
 	return p;
