@@ -2,16 +2,16 @@
 
 #include "atomconfig.h"
 
-#ifndef ATOM_MASTER_STACK_SIZE
-#define ATOM_MASTER_STACK_SIZE 2048
+#ifndef ATOM_SYSTEM_STACK_SIZE
+#define ATOM_SYSTEM_STACK_SIZE 2048
 #endif
 
-#ifndef ATOM_MASTER_STACK_ATTRIBUTE
-#define ATOM_MASTER_STACK_ATTRIBUTE 
+#ifndef ATOM_SYSTEM_STACK_ATTRIBUTE
+#define ATOM_SYSTEM_STACK_ATTRIBUTE 
 #endif
 
-#ifndef ATOM_MAX_THREADS
-#define ATOM_MAX_THREADS 4
+#ifndef ATOM_SYSTEM_MAX_THREADS
+#define ATOM_SYSTEM_MAX_THREADS 4
 #endif
 
 atom_status_t atomOSInit(size_t idleThreadStack, size_t stackChecking);

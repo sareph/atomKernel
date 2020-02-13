@@ -6,8 +6,8 @@
 #include "atomsystem.h"
 
 static size_t lMasterStackSize;
-static uint8_t lMasterStack[ATOM_MASTER_STACK_SIZE] ATOM_MASTER_STACK_ATTRIBUTE;
-static ATOM_TCB lTCBs[ATOM_MAX_THREADS] ATOM_MASTER_STACK_ATTRIBUTE;
+static uint8_t lMasterStack[ATOM_SYSTEM_STACK_SIZE] ATOM_SYSTEM_STACK_ATTRIBUTE;
+static ATOM_TCB lTCBs[ATOM_SYSTEM_MAX_THREADS] ATOM_SYSTEM_STACK_ATTRIBUTE;
 static size_t lCurrentTcb;
 static int_fast8_t lStackChecking;
 
@@ -26,7 +26,7 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
 {
 	atom_status_t ret;
 	
-	if ((lMasterStackSize + threadStack) > ATOM_MASTER_STACK_SIZE)
+	if ((lMasterStackSize + threadStack) > ATOM_SYSTEM_STACK_SIZE)
 	{
 		return ATOM_ERR_NO_MEM;
 	}
