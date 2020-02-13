@@ -115,6 +115,7 @@ extern uint8_t atomOSStarted;
 #define ATOM_ERR_NOT_FOUND      -206
 #define ATOM_ERR_OWNERSHIP      -207
 #define ATOM_ERR_RUNNING        -208
+#define ATOM_ERR_NO_MEM         -209
 
 /* Idle thread priority (lowest) */
 #define IDLE_THREAD_PRIORITY    127
