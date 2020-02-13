@@ -185,9 +185,10 @@ static ATOM_TCB idle_tcb;
 
 /* Number of nested interrupts */
 static int atomIntCnt = 0;
+#if ATOM_IDLE_TIME_CALCULATION
 static int lContextSwitchTotal;
 static int lContextSwitchIdle;
-
+#endif
 /* Constants */
 
 /** Bytecode to fill thread stacks with for stack-checking purposes */
@@ -197,6 +198,7 @@ static int lContextSwitchIdle;
 /* Forward declarations */
 static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb);
 
+#if ATOM_IDLE_TIME_CALCULATION
 /**
  * \b atomGetIdleTime
  *
@@ -212,7 +214,7 @@ int atomGetIdleTime()
 	lContextSwitchTotal = 0;
 	return p;
 }
-
+#endif
 
 /**
  * \b atomSched

@@ -136,8 +136,10 @@ extern void atomSched (uint8_t timer_tick);
 
 extern void atomIntEnter (void);
 extern void atomIntExit (uint8_t timer_tick);
-	
+
+#if ATOM_IDLE_TIME_CALCULATION
 extern int atomGetIdleTime();
+#endif
 
 extern uint8_t tcbEnqueuePriority (ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr);
 extern ATOM_TCB *tcbDequeueHead (ATOM_TCB **tcb_queue_ptr);
