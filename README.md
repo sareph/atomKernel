@@ -2,8 +2,12 @@
 
  * Library: Atomthreads
  * Author: Kelvin Lawson <info@atomthreads.com>
- * Website: http://atomthreads.com
+ * Author: Kaworu <kaworu-gat@k2t.eu>
  * License: BSD Revised
+
+---------------------------------------------------------------------------
+
+Currently the only valid/working & compatible port is cortex-m-cmsis.
 
 ---------------------------------------------------------------------------
 
@@ -43,7 +47,3 @@ SOURCE TREE:
  * tests: Automated test suite
  * ports: CPU architecture ports
 
----------------------------------------------------------------------------
-
-AUTOMATED TESTS STATE:
- * Continuous Integration hosted at travis-ci.org: [![Build Status](https://travis-ci.org/kelvinlawson/atomthreads.svg?branch=master)](https://travis-ci.org/kelvinlawson/atomthreads)
