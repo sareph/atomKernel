@@ -40,6 +40,7 @@
 
 /* Required number of system ticks per second (normally 100 for 10ms tick) */
 #define SYSTEM_TICKS_PER_SEC            1000
+#define SYSTEM_MS_PER_TICK				(1000 / SYSTEM_TICKS_PER_SEC)
 
 /* Size of each stack entry / stack alignment size (4 bytes on Cortex-M without FPU) */
 #define STACK_ALIGN_SIZE    sizeof(uint32_t)
