@@ -36,6 +36,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include "atomdefs.h"
 #include "atomconfig.h"
 
 /* Required number of system ticks per second (normally 100 for 10ms tick) */
@@ -84,6 +85,7 @@ struct cortex_port_priv {
 #endif
 
 void atomOSSysTickHander(void);
+atom_status_t atomPortInit();
 
 /* Uncomment to enable stack-checking */
 /* #define ATOM_STACK_CHECKING */

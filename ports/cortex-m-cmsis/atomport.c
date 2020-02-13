@@ -567,3 +567,9 @@ void archThreadContextInit(ATOM_TCB *tcb_ptr,
 #endif
 }
 
+atom_status_t atomPortInit()
+{
+	NVIC_SetPriority(PendSV_IRQn, 15);
+	
+	return ATOM_OK;
+}

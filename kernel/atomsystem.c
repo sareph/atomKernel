@@ -12,10 +12,21 @@ static size_t lCurrentTcb;
 
 atom_status_t atomOSInit(size_t idleThreadStack)
 {
+	atom_status_t ret;
+	
+	if ((ret = atomPortInit()) != ATOM_OK)
+	{
+		return ret;
+	}
+	
 	lMasterStackSize = 0;
 	lCurrentTcb = 0;
 	
-	atom_status_t ret = atomKernelInit((void*)&lMasterStack[lMasterStackSize], idleThreadStack);
+	if ((ret = atomKernelInit((void*)&lMasterStack[lMasterStackSize], idleThreadStack)) != ATOM_OK)
+	{
+		return ret;
+	}
+	
 	lMasterStackSize += idleThreadStack;
 	return ret;
 }
