@@ -14,5 +14,5 @@
 #define ATOM_SYSTEM_MAX_THREADS 4
 #endif
 
-atom_status_t atomOSInit(size_t idleThreadStack);
+atom_status_t atomOSInit(size_t idleThreadStack, void *idleThreadParam);
 atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAtomThread entryPoint, void *param, ATOM_TCB **pTcb);

@@ -30,7 +30,18 @@
 #include "atom.h"
 #include "atomidle.h"
 
-__weak void atomIdleHook()
+/**
+ * \b atomIdleHook
+ *
+ * Dummy function for idle thread
+ *
+ * If this function is present in the application it will override this one.
+ *
+ * @param[in] param Unused (optional thread entry parameter)
+ *
+ * @return None
+ */
+__weak void atomIdleHook(void *param)
 {
 }
 
@@ -49,13 +60,10 @@ __weak void atomIdleHook()
  */
 int atomIdleThread(void* param)
 {
-	/* Compiler warning  */
-	param = param;
-
 	/* Loop forever */
 	while (1)
 	{
-		atomIdleHook();
+		atomIdleHook(param);
 	}
 	
 	return 0;

@@ -699,7 +699,7 @@ ATOM_TCB *atomCurrentContext(void)
  * @retval ATOM_OK Success
  * @retval ATOM_ERROR Initialisation error
  */
-atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size)
+atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size, void *idleThreadParam)
 {
 	atom_status_t status;
 
@@ -712,7 +712,7 @@ atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_threa
 	status = atomThreadCreate(&idle_tcb,
 		IDLE_THREAD_PRIORITY,
 		atomIdleThread,
-		0,
+		idleThreadParam,
 		idle_thread_stack_bottom,
 		idle_thread_stack_size);
 
@@ -1047,12 +1047,17 @@ ATOM_TCB *tcbDequeuePriority(ATOM_TCB **tcb_queue_ptr, atom_prio_t priority)
 	}
 	
 #if ATOM_KERNEL_TCB_AGEING
+	/* *
+	 * * TODO: write about limitations of this algo
+	 * */
 	walk_ptr = *tcb_queue_ptr;
+	
+	/* Do it only for non-real-time threads */
 	if (walk_ptr && priority > -1)
 	{	
 		do
 		{
-			if (walk_ptr->base_priority > priority)// && walk_ptr->base_priority < IDLE_MINIMUM_PRIORITY)
+			if (walk_ptr->base_priority > priority)
 			{
 				walk_ptr->priority--;
 			}

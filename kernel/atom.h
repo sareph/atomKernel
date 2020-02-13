@@ -123,7 +123,7 @@ extern uint8_t atomOSStarted;
 
 
 /* Function prototypes */
-extern atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size);
+extern atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size, void *idleThreadParam);
 extern void atomKernelStart (void);
 
 extern void atomSched (uint8_t timer_tick);
