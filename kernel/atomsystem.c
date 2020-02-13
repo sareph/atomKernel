@@ -5,6 +5,8 @@
 #include "atomdefs.h"
 #include "atomsystem.h"
 
+#if ATOM_SYSTEM_WRAPPER_ENABLE
+
 static size_t lMasterStackSize;
 static uint8_t lMasterStack[ATOM_SYSTEM_STACK_SIZE] ATOM_SYSTEM_STACK_ATTRIBUTE;
 static ATOM_TCB lTCBs[ATOM_SYSTEM_MAX_THREADS] ATOM_SYSTEM_STACK_ATTRIBUTE;
@@ -62,3 +64,5 @@ void atomOSStart(void)
 {
 	atomKernelStart();
 }
+
+#endif
