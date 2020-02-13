@@ -35,6 +35,7 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
 {
 	atom_status_t ret;
 	
+	atom_assert((lMasterStackSize + threadStack) > ATOM_SYSTEM_STACK_SIZE, "No more space in system stack storage area");
 	if ((lMasterStackSize + threadStack) > ATOM_SYSTEM_STACK_SIZE)
 	{
 		return ATOM_ERR_NO_MEM;
@@ -55,4 +56,9 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
 	
 	lCurrentTcb++;
 	return ret;
+}
+
+void atomOSStart(void)
+{
+	atomKernelStart();
 }

@@ -44,7 +44,13 @@ extern "C" {
 struct atom_tcb;
 
 #include "atomdefs.h"
-	
+
+#ifdef atom_port_assert
+#define atom_assert(x,m) atom_port_assert(x,m)
+#else
+#define atom_assert(x,m) atom_port_assert(x,m)
+#endif
+
 typedef atom_status_t (*_fnAtomThread)(void *ptr);
 	
 typedef struct atom_tcb

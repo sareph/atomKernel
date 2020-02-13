@@ -62,6 +62,11 @@
       enum { assert_static__ = 1 / (e) } ; \
    } while (0)
 
+#define atom_port_assert(x, m) \
+	do { \
+		if(!(x)) { __asm("bkpt 255"); } \
+	} while(0)
+	   
 /**
  * Critical region protection: this should disable interrupts
  * to protect OS data structures during modification. It must
