@@ -91,12 +91,12 @@
 
 typedef struct event_timer
 {
-    ATOM_TCB *tcb_ptr;  /* Thread which is suspended with timeout */
-    ATOM_EVENT *event_ptr;  /* event the thread is suspended on */
+	ATOM_TCB *tcb_ptr; /* Thread which is suspended with timeout */
+	ATOM_EVENT *event_ptr; /* event the thread is suspended on */
 } EVENT_TIMER;
 
 
-static void atomEventTimerCallback (POINTER cb_data);
+static void atomEventTimerCallback(POINTER cb_data);
 
 /**
  * \b atomEventCreate
@@ -121,28 +121,28 @@ atom_status_t atomEventCreate(ATOM_EVENT *event_ptr, char *name_ptr)
 {
 	atom_status_t status;
 
-    /* Initialize event flags control block to all zeros.  */
-    //memset(event_ptr, 0, sizeof(ATOM_EVENT));
+	/* Initialize event flags control block to all zeros.  */
+	//memset(event_ptr, 0, sizeof(ATOM_EVENT));
 
-    /* Parameter check */
-    if (event_ptr == NULL)
-    {
-        /* Bad event pointer */
-        status = ATOM_ERR_PARAM;
-    }
-    else
-    {
+	/* Parameter check */
+	if(event_ptr == NULL)
+	{
+		/* Bad event pointer */
+		status = ATOM_ERR_PARAM;
+	}
+	else
+	{
 
-        /* Initialize the suspended threads queue */
-    	event_ptr->suspQ = NULL;
+		/* Initialize the suspended threads queue */
+		event_ptr->suspQ = NULL;
 
-    	event_ptr->atom_event_current=0;
+		event_ptr->atom_event_current = 0;
 
-        /* Successful */
-        status = ATOM_OK;
-    }
+		/* Successful */
+		status = ATOM_OK;
+	}
 
-    return (status);
+	return (status);
 }
 
 
@@ -190,237 +190,239 @@ atom_status_t atomEventCreate(ATOM_EVENT *event_ptr, char *name_ptr)
  * @retval ATOM_ERR_TIMER Problem registering the timeout
  */
 
-atom_status_t  atomEventGet(ATOM_EVENT *event_ptr,
+atom_status_t atomEventGet(ATOM_EVENT *event_ptr,
 	uint32_t requested_flags,
-    uint8_t get_option, uint32_t *actual_flags_ptr, uint32_t timeout)
+	uint8_t get_option,
+	uint32_t *actual_flags_ptr,
+	uint32_t timeout)
 {
 	atom_status_t status;
-    EVENT_TIMER timer_data;
-    ATOM_TIMER timer_cb;
-    ATOM_TCB *curr_tcb_ptr;
+	EVENT_TIMER timer_data;
+	ATOM_TIMER timer_cb;
+	ATOM_TCB *curr_tcb_ptr;
 
-    uint32_t current_flags;
+	uint32_t current_flags;
 #ifdef DEBUG_EVENT
-    printf("%s enter \n",__func__);
+	printf("%s enter \n", __func__);
 #endif
-    CRITICAL_STORE;
-    /* Check parameters
-     * Check for an invalid destination for actual flags.
-     * Check for invalid get option.
-     * */
-    if (event_ptr == NULL || actual_flags_ptr == NULL || get_option > ATOM_AND_CLEAR)
-    {
-        /* Bad event pointer */
-    	return(ATOM_ERR_PARAM);
-    }
+	CRITICAL_STORE;
+	/* Check parameters
+	 * Check for an invalid destination for actual flags.
+	 * Check for invalid get option.
+	 * */
+	if (event_ptr == NULL || actual_flags_ptr == NULL || get_option > ATOM_AND_CLEAR)
+	{
+		/* Bad event pointer */
+		return (ATOM_ERR_PARAM);
+	}
 
-    else
-    {
-        /* Protect access to the event object and OS queues */
-        CRITICAL_START ();
+	else
+	{
+		/* Protect access to the event object and OS queues */
+		CRITICAL_START();
 
-        current_flags =  event_ptr -> atom_event_current;
+		current_flags =  event_ptr->atom_event_current;
 #ifdef DEBUG_EVENT
-        printf("atomEventGet current_flags %d \n",(int)event_ptr -> atom_event_current);
+		printf("atomEventGet current_flags %d \n", (int)event_ptr->atom_event_current);
 #endif
-        /* Determine if the event flags are present, based on the get option.  */
-        if (get_option & ATOM_EVENT_AND_MASK)
-        {
+		/* Determine if the event flags are present, based on the get option.  */
+		if (get_option & ATOM_EVENT_AND_MASK)
+		{
 
-            /* All flags must be present to satisfy request.  */
-            if ((current_flags & requested_flags) == requested_flags)
-            {
-                /* Yes, all the events are present.  */
-                status =  ATOM_OK;
-            }
-            else
-            {
+			/* All flags must be present to satisfy request.  */
+			if ((current_flags & requested_flags) == requested_flags)
+			{
+				/* Yes, all the events are present.  */
+				status =  ATOM_OK;
+			}
+			else
+			{
 
-                /* No, not all the events are present.  */
-                status =  ATOM_NO_EVENTS;
-            }
-        }
-        else
-        {
+				/* No, not all the events are present.  */
+				status =  ATOM_NO_EVENTS;
+			}
+		}
+		else
+		{
 
-            /* Any of the events will satisfy the request.  so return immediately or will suspending the thread..*/
-            if (current_flags & requested_flags)
-            {
+			/* Any of the events will satisfy the request.  so return immediately or will suspending the thread..*/
+			if (current_flags & requested_flags)
+			{
 
-                /* Yes, one or more of the requested events are set.  */
-                status =  ATOM_OK;
-            }
-            else
-            {
+				/* Yes, one or more of the requested events are set.  */
+				status =  ATOM_OK;
+			}
+			else
+			{
 
-                /* No, none of the events are currently set.  */
-                status =  ATOM_NO_EVENTS;
-            }
-        }
+				/* No, none of the events are currently set.  */
+				status =  ATOM_NO_EVENTS;
+			}
+		}
 
-        /* Now determine if the request can be satisfied immediately.  */
-        if (status == ATOM_OK)
-        {
+		/* Now determine if the request can be satisfied immediately.  */
+		if (status == ATOM_OK)
+		{
 
-            /* Yes, this request can be handled immediately.  */
+			/* Yes, this request can be handled immediately.  */
 
-            /* Return the actual event flags that satisfied the request.  */
-            *actual_flags_ptr =  current_flags;
+			/* Return the actual event flags that satisfied the request.  */
+			*actual_flags_ptr =  current_flags;
 
-            /* Determine whether or not clearing needs to take place.  */
-            if (get_option & ATOM_EVENT_CLEAR_MASK)
-            {
+			/* Determine whether or not clearing needs to take place.  */
+			if (get_option & ATOM_EVENT_CLEAR_MASK)
+			{
 
-                /* Yes, clear the flags that satisfied this request.  */
-            	event_ptr -> atom_event_current =
-            			event_ptr -> atom_event_current & ~requested_flags;
-            }
-            CRITICAL_END ();/*ensure each exit have chance to end the critical in each case*/
-        }
-        else
-        {
+				/* Yes, clear the flags that satisfied this request.  */
+				event_ptr->atom_event_current =
+						event_ptr->atom_event_current & ~requested_flags;
+			}
+			CRITICAL_END(); /*ensure each exit have chance to end the critical in each case*/
+		}
+		else
+		{
 #ifdef DEBUG_EVENT
-        	printf("%s not meet the reqeust flag go here \n",__func__);
+			printf("%s not meet the reqeust flag go here \n", __func__);
 #endif
-            /* Determine if the request specifies suspension.  it is timeout value ATOM_WAIT_FOREVER*/
-            if (timeout >=0 )
-            {
-                /* Prepare for suspension of this thread.  */
+			/* Determine if the request specifies suspension.  it is timeout value ATOM_WAIT_FOREVER*/
+			if (timeout >= 0)
+			{
+				/* Prepare for suspension of this thread.  */
 
-                    /* Get the current TCB */
-                    curr_tcb_ptr = atomCurrentContext();
-                    /* Check we are actually in thread context */
-                    if (curr_tcb_ptr)
-                    {
-                        /* Add current thread to the suspend list on this event */
-                        if (tcbEnqueuePriority (&event_ptr->suspQ, curr_tcb_ptr) != ATOM_OK)
-                        {
-                            /* Exit critical region */
-                            CRITICAL_END ();
+				    /* Get the current TCB */
+				curr_tcb_ptr = atomCurrentContext();
+				/* Check we are actually in thread context */
+				if (curr_tcb_ptr)
+				{
+					/* Add current thread to the suspend list on this event */
+					if (tcbEnqueuePriority(&event_ptr->suspQ, curr_tcb_ptr) != ATOM_OK)
+					{
+						/* Exit critical region */
+						CRITICAL_END();
 
-                            /* There was an error putting this thread on the suspend list */
-                            status = ATOM_ERR_QUEUE;
-                        }
-                        else
-                        {
-                            /* Set suspended status for the current thread */
-                            curr_tcb_ptr->suspended = TRUE;
-                            status = ATOM_OK;
+						/* There was an error putting this thread on the suspend list */
+						status = ATOM_ERR_QUEUE;
+					}
+					else
+					{
+						/* Set suspended status for the current thread */
+						curr_tcb_ptr->suspended = TRUE;
+						status = ATOM_OK;
 
-                            /* Remember which event flags we are looking for.  */
-                            curr_tcb_ptr -> suspend_info =  requested_flags;
-                            curr_tcb_ptr -> suspend_option =  get_option;
+						/* Remember which event flags we are looking for.  */
+						curr_tcb_ptr->suspend_info =  requested_flags;
+						curr_tcb_ptr->suspend_option =  get_option;
 #ifdef DEBUG_EVENT
-                            printf("atomEventGet suspend_option %d \n",(int)curr_tcb_ptr -> suspend_option);
-                            printf("atomEventGet suspend_info %d \n",(int)curr_tcb_ptr -> suspend_info);
-#endif
-
-                            /* Track errors */
-
-
-                            /* Register a timer callback if requested */
-                            if (timeout)
-                            {
-                                /* Fill out the data needed by the callback to wake us up */
-                                timer_data.tcb_ptr = curr_tcb_ptr;
-                                timer_data.event_ptr = event_ptr;
-
-                                /* Fill out the timer callback request structure */
-                                timer_cb.cb_func = atomEventTimerCallback;
-                                timer_cb.cb_data = (POINTER)&timer_data;
-                                timer_cb.cb_ticks = timeout;
-
-                                /**
-                                 * Store the timer details in the TCB so that we can
-                                 * cancel the timer callback if the event is put
-                                 * before the timeout occurs.
-                                 */
-                                curr_tcb_ptr->suspend_timo_cb = &timer_cb;
-
-                                /* Register a callback on timeout */
-                                if (atomTimerRegister (&timer_cb) != ATOM_OK)
-                                {
-                                    /* Timer registration failed */
-                                    status = ATOM_ERR_TIMER;
-
-                                    /* Clean up and return to the caller */
-                                    (void)tcbDequeueEntry (&event_ptr->suspQ, curr_tcb_ptr);
-                                    curr_tcb_ptr->suspended = FALSE;
-                                    curr_tcb_ptr->suspend_timo_cb = NULL;
-                                }
-                            }
-
-                            /* Set no timeout requested */
-                            else
-                            {
-                                /* No need to cancel timeouts on this one */
-                                curr_tcb_ptr->suspend_timo_cb = NULL;
-                            }
-
-                            /* Exit critical region */
-                            CRITICAL_END ();
-
-                            /* Check no errors have occurred */
-                            if (status == ATOM_OK )
-
-                            {
-                                /**
-                                 * Current thread now blocking, schedule in a new
-                                 * one. We already know we are in thread context
-                                 * so can call the scheduler from here.
-                                 */
-#ifdef DEBUG_EVENT
-                            	printf("%s suspend here \n",__func__);
-#endif
-                                atomSched (FALSE);
-
-#ifdef DEBUG_EVENT
-                                printf("%s suspend go \n",__func__);
+						printf("atomEventGet suspend_option %d \n", (int)curr_tcb_ptr->suspend_option);
+						printf("atomEventGet suspend_info %d \n", (int)curr_tcb_ptr->suspend_info);
 #endif
 
-                                /**
-                                 * Normal atomEventGet() wakeups will set ATOM_OK status,
-                                 * while timeouts will set ATOM_TIMEOUT and event
-                                 * deletions will set ATOM_ERR_DELETED.
-                                 */
-                                status = curr_tcb_ptr->suspend_wake_status;
+						/* Track errors */
 
-                                /**
-                                 * If we have been woken up with ATOM_OK then
-                                 * another thread set the event flags and
-                                 * handed control to this thread.
-                                 */
 
-                            }
-                        }
-                    }
-                    else
-                    {
-                        /* Exit critical region */
-                        CRITICAL_END ();
+						/* Register a timer callback if requested */
+						if (timeout)
+						{
+							/* Fill out the data needed by the callback to wake us up */
+							timer_data.tcb_ptr = curr_tcb_ptr;
+							timer_data.event_ptr = event_ptr;
 
-                        /* Not currently in thread context, can't suspend */
-                        status = ATOM_ERR_CONTEXT;
-                    }
-            }
+							/* Fill out the timer callback request structure */
+							timer_cb.cb_func = atomEventTimerCallback;
+							timer_cb.cb_data = (POINTER)&timer_data;
+							timer_cb.cb_ticks = timeout;
 
-            else
-            {
-                /* timeout == -1, requested not to block and count is zero */
-                CRITICAL_END();
-                status = ATOM_WOULDBLOCK;
-            }
+							/**
+							 * Store the timer details in the TCB so that we can
+							 * cancel the timer callback if the event is put
+							 * before the timeout occurs.
+							 */
+							curr_tcb_ptr->suspend_timo_cb = &timer_cb;
 
-        }
+							/* Register a callback on timeout */
+							if (atomTimerRegister(&timer_cb) != ATOM_OK)
+							{
+								/* Timer registration failed */
+								status = ATOM_ERR_TIMER;
 
-    }
+								/* Clean up and return to the caller */
+								(void)tcbDequeueEntry(&event_ptr->suspQ, curr_tcb_ptr);
+								curr_tcb_ptr->suspended = FALSE;
+								curr_tcb_ptr->suspend_timo_cb = NULL;
+							}
+						}
+
+						/* Set no timeout requested */
+						else
+						{
+							/* No need to cancel timeouts on this one */
+							curr_tcb_ptr->suspend_timo_cb = NULL;
+						}
+
+						/* Exit critical region */
+						CRITICAL_END();
+
+						/* Check no errors have occurred */
+						if (status == ATOM_OK)
+
+						{
+							/**
+							 * Current thread now blocking, schedule in a new
+							 * one. We already know we are in thread context
+							 * so can call the scheduler from here.
+							 */
 #ifdef DEBUG_EVENT
-    printf("status %d leave \n",(unsigned int)status);
-    printf("%s leave \n",__func__);
+							printf("%s suspend here \n", __func__);
+#endif
+							atomSched(FALSE);
+
+#ifdef DEBUG_EVENT
+							printf("%s suspend go \n", __func__);
 #endif
 
-    /* Return actual completion status.  */
-    return(status);
+							/**
+							 * Normal atomEventGet() wakeups will set ATOM_OK status,
+							 * while timeouts will set ATOM_TIMEOUT and event
+							 * deletions will set ATOM_ERR_DELETED.
+							 */
+							status = curr_tcb_ptr->suspend_wake_status;
+
+							/**
+							 * If we have been woken up with ATOM_OK then
+							 * another thread set the event flags and
+							 * handed control to this thread.
+							 */
+
+						}
+					}
+				}
+				else
+				{
+					/* Exit critical region */
+					CRITICAL_END();
+
+					/* Not currently in thread context, can't suspend */
+					status = ATOM_ERR_CONTEXT;
+				}
+			}
+
+			else
+			{
+				/* timeout == -1, requested not to block and count is zero */
+				CRITICAL_END();
+				status = ATOM_WOULDBLOCK;
+			}
+
+		}
+
+	}
+#ifdef DEBUG_EVENT
+	printf("status %d leave \n", (unsigned int)status);
+	printf("%s leave \n", __func__);
+#endif
+
+	/* Return actual completion status.  */
+	return (status);
 }
 
 
@@ -436,46 +438,46 @@ atom_status_t  atomEventGet(ATOM_EVENT *event_ptr,
  *
  * @param[in] cb_data Pointer to a EVENT_TIMER object
  */
-static void atomEventTimerCallback (POINTER cb_data)
+static void atomEventTimerCallback(POINTER cb_data)
 {
 	EVENT_TIMER *timer_data_ptr;
 #ifdef DEBUG_EVENT
-	printf("%s enter \n",__func__);
+	printf("%s enter \n", __func__);
 #endif
 
-    CRITICAL_STORE;
+	CRITICAL_STORE;
 
-    /* Get the EVENT_TIMER structure pointer */
-    timer_data_ptr = (EVENT_TIMER *)cb_data;
+	/* Get the EVENT_TIMER structure pointer */
+	timer_data_ptr = (EVENT_TIMER *)cb_data;
 
-    /* Check parameter is valid */
-    if (timer_data_ptr)
-    {
-        /* Enter critical region */
-        CRITICAL_START ();
+	/* Check parameter is valid */
+	if (timer_data_ptr)
+	{
+		/* Enter critical region */
+		CRITICAL_START();
 
-        /* Set status to indicate to the waiting thread that it timed out */
-        timer_data_ptr->tcb_ptr->suspend_wake_status = ATOM_TIMEOUT;
+		/* Set status to indicate to the waiting thread that it timed out */
+		timer_data_ptr->tcb_ptr->suspend_wake_status = ATOM_TIMEOUT;
 
-        /* Flag as no timeout registered */
-        timer_data_ptr->tcb_ptr->suspend_timo_cb = NULL;
+		/* Flag as no timeout registered */
+		timer_data_ptr->tcb_ptr->suspend_timo_cb = NULL;
 
-        /* Remove this thread from the event suspend list */
-        (void)tcbDequeueEntry (&timer_data_ptr->event_ptr->suspQ, timer_data_ptr->tcb_ptr);
+		/* Remove this thread from the event suspend list */
+		(void)tcbDequeueEntry(&timer_data_ptr->event_ptr->suspQ, timer_data_ptr->tcb_ptr);
 
-        /* Put the thread on the ready queue */
-        (void)tcbEnqueuePriority (&tcbReadyQ, timer_data_ptr->tcb_ptr);
+		/* Put the thread on the ready queue */
+		(void)tcbEnqueuePriority(&tcbReadyQ, timer_data_ptr->tcb_ptr);
 
-        /* Exit critical region */
-        CRITICAL_END ();
+		/* Exit critical region */
+		CRITICAL_END();
 
-        /**
-         * Note that we don't call the scheduler now as it will be called
-         * when we exit the ISR by atomIntExit().
-         */
-    }
+		/**
+		 * Note that we don't call the scheduler now as it will be called
+		 * when we exit the ISR by atomIntExit().
+		 */
+	}
 #ifdef DEBUG_EVENT
-    printf("%s leave \n",__func__);
+	printf("%s leave \n", __func__);
 #endif
 
 }
@@ -530,219 +532,219 @@ static void atomEventTimerCallback (POINTER cb_data)
 atom_status_t atomEventSet(ATOM_EVENT *event_ptr, uint32_t flags_to_set, uint8_t set_option)
 {
 	atom_status_t status;
-    CRITICAL_STORE;
-    ATOM_TCB *tcb_ptr;
+	CRITICAL_STORE;
+	ATOM_TCB *tcb_ptr;
 
 #ifdef DEBUG_EVENT
-    printf("%s enter \n",__func__);
+	printf("%s enter \n", __func__);
 #endif
-    /* Check parameters
-     * Check for an invalid destination for actual flags.
-     * Check for invalid get option.
-     * */
-    if (event_ptr == NULL || ((set_option != ATOM_AND) && (set_option != ATOM_OR)) )
-    {
-        /* Bad event pointer */
-    	return(ATOM_ERR_PARAM);
-    }
+	/* Check parameters
+	 * Check for an invalid destination for actual flags.
+	 * Check for invalid get option.
+	 * */
+	if (event_ptr == NULL || ((set_option != ATOM_AND) && (set_option != ATOM_OR)))
+	{
+		/* Bad event pointer */
+		return (ATOM_ERR_PARAM);
+	}
 
-    else
-    {
-    	CRITICAL_START ();
-        /* Determine how to set this group's event flags.  */
-        if (set_option & ATOM_EVENT_AND_MASK)
-        {
+	else
+	{
+		CRITICAL_START();
+		/* Determine how to set this group's event flags.  */
+		if (set_option & ATOM_EVENT_AND_MASK)
+		{
 
-            /* Previous set operation was not interrupted, simply clear the
-               specified flags by "ANDing" the flags into the current events
-               of the group.  */
-        	event_ptr -> atom_event_current =
-        			event_ptr -> atom_event_current & flags_to_set;
+			/* Previous set operation was not interrupted, simply clear the
+			   specified flags by "ANDing" the flags into the current events
+			   of the group.  */
+			event_ptr->atom_event_current =
+					event_ptr->atom_event_current & flags_to_set;
 
-            /* There is no need to check for any suspended threads since no
-               new bits are set.  */
-        	CRITICAL_END ();
+			/* There is no need to check for any suspended threads since no
+			   new bits are set.  */
+			CRITICAL_END();
 
-            /* Return successful status.  */
-            return(ATOM_OK);
-        }
-        else
-        {
+			/* Return successful status.  */
+			return (ATOM_OK);
+		}
+		else
+		{
 
-            /* "OR" the flags into the current events of the group.  */
-        	event_ptr -> atom_event_current =
-        			event_ptr -> atom_event_current | flags_to_set;
+			/* "OR" the flags into the current events of the group.  */
+			event_ptr->atom_event_current =
+					event_ptr->atom_event_current | flags_to_set;
 
-            /* Determine if there are any delayed flags to clear.  */
-        }
-
-
-#ifdef DEBUG_EVENT
-        printf(" event_ptr -> atom_event_current 0x%8x \n",(unsigned int)event_ptr -> atom_event_current);
-#endif
-
-        /* If any threads are blocking on the event, wake up one */
-        if (event_ptr->suspQ)
-        {
-#ifdef DEBUG_EVENT
-        	printf("tcbDequeueHead to pull out queue.\n");
-#endif
-
-        	tcb_ptr = tcbDequeueHead (&event_ptr->suspQ);
-        	////////////////////////////////////////////////////////
-        	/* copy from thread event get.***********/
-            /* Determine if this thread's get event flag request has been met.  */
-            if (tcb_ptr -> suspend_option & ATOM_EVENT_AND_MASK)
-            {
-#ifdef DEBUG_EVENT
-            	printf("AND event_ptr -> atom_event_current 0x%8x \n",(unsigned int)event_ptr -> atom_event_current);
-            	printf("AND event_ptr -> suspend_info 0x%8x \n",(unsigned int)tcb_ptr -> suspend_info);
-#endif
-
-
-                /* All flags must be present to satisfy request.  */
-                if ((event_ptr -> atom_event_current & tcb_ptr -> suspend_info) ==
-                		tcb_ptr -> suspend_info)
-
-                    /* Yes, all the events are present.  */
-                    status =  ATOM_OK;
-                else
-
-                    /* No, not all the events are present.  */
-                    status =  ATOM_NO_EVENTS;
-            }
-            else
-            {
-#ifdef DEBUG_EVENT
-            	printf("OR event_ptr -> atom_event_current 0x%8x \n",(unsigned int)event_ptr -> atom_event_current);
-            	printf("OR event_ptr -> suspend_info 0x%8x \n",(unsigned int)tcb_ptr -> suspend_info);
-#endif
-
-
-                /* Any of the events will satisfy the request.  */
-                if (event_ptr -> atom_event_current & tcb_ptr -> suspend_info)
-
-                    /* Yes, one or more of the requested events are set.  */
-                    status =  ATOM_OK;
-                else
-
-                    /* No, none of the events are currently set.  */
-                    status =  ATOM_NO_EVENTS;
-            }
-#ifdef DEBUG_EVENT
-            printf("check suspQ status %d \n",(unsigned int)status);
-#endif
-
-
-
-            /* Was the suspended thread's event request satisfied?  */
-            /* enter this case it must return OK*/
-            if (status == ATOM_OK)
-            {
-
-                /* Yes, resume the thread and apply any event flag
-                   clearing.  */
-
-                /* Determine whether or not clearing needs to take place.  */
-                if (tcb_ptr ->suspend_option & ATOM_EVENT_CLEAR_MASK)
-                {
-
-                    /* Yes, clear the flags that satisfied this request.  */
-                	event_ptr -> atom_event_current =
-                			event_ptr -> atom_event_current & ~(tcb_ptr ->suspend_option);
-                }
-
-
-                /* Set OK status to be returned to the waiting thread */
-                tcb_ptr->suspend_wake_status = ATOM_OK;
+			/* Determine if there are any delayed flags to clear.  */
+		}
 
 
 #ifdef DEBUG_EVENT
-                printf ("enqueue the thread into ready queue \n");
+		printf(" event_ptr -> atom_event_current 0x%8x \n", (unsigned int)event_ptr->atom_event_current);
 #endif
-                if (tcbEnqueuePriority (&tcbReadyQ, tcb_ptr) != ATOM_OK)
-                {
-                    /* Exit critical region */
-                    CRITICAL_END ();
 
-                    /* There was a problem putting the thread on the ready queue */
-                    status = ATOM_ERR_QUEUE;
-                }
-                else
-                {
-                    if ((tcb_ptr->suspend_timo_cb != NULL)
-                          && (atomTimerCancel (tcb_ptr->suspend_timo_cb) != ATOM_OK))
-                      {
-                          /* There was a problem cancelling a timeout on this event */
-                          status = ATOM_ERR_TIMER;
-                      }
-                      else
-                      {
-                          /* Flag as no timeout registered */
-                      	tcb_ptr->suspend_timo_cb = NULL;
+		/* If any threads are blocking on the event, wake up one */
+		if (event_ptr->suspQ)
+		{
+#ifdef DEBUG_EVENT
+			printf("tcbDequeueHead to pull out queue.\n");
+#endif
 
-                          /* Successful */
-                          status = ATOM_OK;
-                      }
+			tcb_ptr = tcbDequeueHead(&event_ptr->suspQ);
+			////////////////////////////////////////////////////////
+			/* copy from thread event get.***********/
+			/* Determine if this thread's get event flag request has been met.  */
+			if(tcb_ptr->suspend_option & ATOM_EVENT_AND_MASK)
+			{
+#ifdef DEBUG_EVENT
+				printf("AND event_ptr -> atom_event_current 0x%8x \n", (unsigned int)event_ptr->atom_event_current);
+				printf("AND event_ptr -> suspend_info 0x%8x \n", (unsigned int)tcb_ptr->suspend_info);
+#endif
 
 
-                      /* Exit critical region */
-                      CRITICAL_END ();
+				/* All flags must be present to satisfy request.  */
+				if ((event_ptr->atom_event_current & tcb_ptr->suspend_info) ==
+						tcb_ptr->suspend_info)
 
-                      /**
-                       * The scheduler may now make a policy decision to thread
-                       * switch if we are currently in thread context. If we are
-                       * in interrupt context it will be handled by atomIntExit().
-                       */
-                      if (atomCurrentContext())
-                          atomSched (FALSE);
-                }
-            }
+					/* Yes, all the events are present.  */
+				status =  ATOM_OK;
+				else
 
-            else/* if not the ATOM_OK, enqueue the ptr checkout just now*/
-            {
+				    /* No, not all the events are present.  */
+				    status =  ATOM_NO_EVENTS;
+			}
+			else
+			{
+#ifdef DEBUG_EVENT
+				printf("OR event_ptr -> atom_event_current 0x%8x \n", (unsigned int)event_ptr->atom_event_current);
+				printf("OR event_ptr -> suspend_info 0x%8x \n", (unsigned int)tcb_ptr->suspend_info);
+#endif
 
-            	//case for ATOM_NO_EVENTS
+
+				/* Any of the events will satisfy the request.  */
+				if (event_ptr->atom_event_current & tcb_ptr->suspend_info)
+
+					/* Yes, one or more of the requested events are set.  */
+				status =  ATOM_OK;
+				else
+
+				    /* No, none of the events are currently set.  */
+				    status =  ATOM_NO_EVENTS;
+			}
+#ifdef DEBUG_EVENT
+			printf("check suspQ status %d \n", (unsigned int)status);
+#endif
+
+
+
+			/* Was the suspended thread's event request satisfied?  */
+			/* enter this case it must return OK*/
+			if (status == ATOM_OK)
+			{
+
+				/* Yes, resume the thread and apply any event flag
+				   clearing.  */
+
+				/* Determine whether or not clearing needs to take place.  */
+				if (tcb_ptr->suspend_option & ATOM_EVENT_CLEAR_MASK)
+				{
+
+					/* Yes, clear the flags that satisfied this request.  */
+					event_ptr->atom_event_current =
+							event_ptr->atom_event_current & ~(tcb_ptr->suspend_option);
+				}
+
+
+				/* Set OK status to be returned to the waiting thread */
+				tcb_ptr->suspend_wake_status = ATOM_OK;
+
 
 #ifdef DEBUG_EVENT
-            	printf("status %d \n",status);
-            	printf("tcbEnqueuePriority to suspq\n");
+				printf("enqueue the thread into ready queue \n");
 #endif
-            	if (tcb_ptr)
-            	{
-					if (tcbEnqueuePriority (&event_ptr->suspQ, tcb_ptr) != ATOM_OK)
+				if (tcbEnqueuePriority(&tcbReadyQ, tcb_ptr) != ATOM_OK)
+				{
+					/* Exit critical region */
+					CRITICAL_END();
+
+					/* There was a problem putting the thread on the ready queue */
+					status = ATOM_ERR_QUEUE;
+				}
+				else
+				{
+					if ((tcb_ptr->suspend_timo_cb != NULL)
+					      && (atomTimerCancel(tcb_ptr->suspend_timo_cb) != ATOM_OK))
+					{
+						/* There was a problem cancelling a timeout on this event */
+						status = ATOM_ERR_TIMER;
+					}
+					else
+					{
+						/* Flag as no timeout registered */
+						tcb_ptr->suspend_timo_cb = NULL;
+
+						/* Successful */
+						status = ATOM_OK;
+					}
+
+
+					/* Exit critical region */
+					CRITICAL_END();
+
+					/**
+					 * The scheduler may now make a policy decision to thread
+					 * switch if we are currently in thread context. If we are
+					 * in interrupt context it will be handled by atomIntExit().
+					 */
+					if (atomCurrentContext())
+						atomSched(FALSE);
+				}
+			}
+
+			else/* if not the ATOM_OK, enqueue the ptr checkout just now*/
+			{
+
+				//case for ATOM_NO_EVENTS
+
+#ifdef DEBUG_EVENT
+				            	printf("status %d \n", status);
+				printf("tcbEnqueuePriority to suspq\n");
+#endif
+				if (tcb_ptr)
+				{
+					if (tcbEnqueuePriority(&event_ptr->suspQ, tcb_ptr) != ATOM_OK)
 					{
 
 						/* There was a problem putting the thread on the ready queue */
 						status = ATOM_ERR_QUEUE;
 					}
-            	}
-            	/* Exit critical region */
-                CRITICAL_END ();
+				}
+				/* Exit critical region */
+				CRITICAL_END();
 
-            }
+			}
 
-            /**
-             * Threads are woken up in priority order, with a FIFO system
-             * used on same priority threads. We always take the head,
-             * ordering is taken care of by an ordered list enqueue.
-             */
+			/**
+			 * Threads are woken up in priority order, with a FIFO system
+			 * used on same priority threads. We always take the head,
+			 * ordering is taken care of by an ordered list enqueue.
+			 */
 
-        }/*end of suspend quque*/
-        else
-        {
-        	/* Exit critical region added 0329*/
-            CRITICAL_END ();
-        }
+		}/*end of suspend quque*/
+		else
+		{
+			/* Exit critical region added 0329*/
+			CRITICAL_END();
+		}
 
-    }/* end of else event_ptr == NULL*/
+	}/* end of else event_ptr == NULL*/
 
 
 #ifdef DEBUG_EVENT
-    printf("status %d leave \n",(unsigned int)status);
-    printf("%s leave \n",__func__);
+	printf("status %d leave \n", (unsigned int)status);
+	printf("%s leave \n", __func__);
 #endif
-    return (status);
+	return (status);
 }
 
 
@@ -754,97 +756,97 @@ atom_status_t atomEventSet(ATOM_EVENT *event_ptr, uint32_t flags_to_set, uint8_t
 atom_status_t atomEventDelete(ATOM_EVENT *event_ptr)
 {
 	atom_status_t status;
-    CRITICAL_STORE;
-    ATOM_TCB *tcb_ptr;
-    uint8_t woken_threads = FALSE;
+	CRITICAL_STORE;
+	ATOM_TCB *tcb_ptr;
+	uint8_t woken_threads = FALSE;
 
-    /* Parameter check */
-    if (event_ptr == NULL)
-    {
-        /* Bad event pointer */
-        status = ATOM_ERR_PARAM;
-    }
-    else
-    {
-        /* Default to success status unless errors occur during wakeup */
-        status = ATOM_OK;
+	/* Parameter check */
+	if (event_ptr == NULL)
+	{
+		/* Bad event pointer */
+		status = ATOM_ERR_PARAM;
+	}
+	else
+	{
+		/* Default to success status unless errors occur during wakeup */
+		status = ATOM_OK;
 
-        /* Wake up all suspended tasks */
-        while (1)
-        {
-            /* Enter critical region */
-            CRITICAL_START ();
+		/* Wake up all suspended tasks */
+		while (1)
+		{
+			/* Enter critical region */
+			CRITICAL_START();
 
-            /* Check if any threads are suspended */
-            tcb_ptr = tcbDequeueHead (&event_ptr->suspQ);
+			/* Check if any threads are suspended */
+			tcb_ptr = tcbDequeueHead(&event_ptr->suspQ);
 
-            /* A thread is suspended on the event group */
-            if (tcb_ptr)
-            {
+			/* A thread is suspended on the event group */
+			if (tcb_ptr)
+			{
 #ifdef DEBUG_EVENT
-            	printf("tcb_ptr->suspend_wake_status %d\n",tcb_ptr->suspend_wake_status);
+				printf("tcb_ptr->suspend_wake_status %d\n", tcb_ptr->suspend_wake_status);
 #endif
 
-                /* Return error status to the waiting thread */
-                tcb_ptr->suspend_wake_status = ATOM_ERR_DELETED;
+				/* Return error status to the waiting thread */
+				tcb_ptr->suspend_wake_status = ATOM_ERR_DELETED;
 
-                /* Put the thread on the ready queue */
-                if (tcbEnqueuePriority (&tcbReadyQ, tcb_ptr) != ATOM_OK)
-                {
-                    /* Exit critical region */
-                    CRITICAL_END ();
+				/* Put the thread on the ready queue */
+				if (tcbEnqueuePriority(&tcbReadyQ, tcb_ptr) != ATOM_OK)
+				{
+					/* Exit critical region */
+					CRITICAL_END();
 
-                    /* Quit the loop, returning error */
-                    status = ATOM_ERR_QUEUE;
-                    break;
-                }
+					/* Quit the loop, returning error */
+					status = ATOM_ERR_QUEUE;
+					break;
+				}
 
-                /* If there's a timeout on this suspension, cancel it */
-                if (tcb_ptr->suspend_timo_cb)
-                {
-                    /* Cancel the callback */
-                    if (atomTimerCancel (tcb_ptr->suspend_timo_cb) != ATOM_OK)
-                    {
-                        /* Exit critical region */
-                        CRITICAL_END ();
+				/* If there's a timeout on this suspension, cancel it */
+				if (tcb_ptr->suspend_timo_cb)
+				{
+					/* Cancel the callback */
+					if (atomTimerCancel(tcb_ptr->suspend_timo_cb) != ATOM_OK)
+					{
+						/* Exit critical region */
+						CRITICAL_END();
 
-                        /* Quit the loop, returning error */
-                        status = ATOM_ERR_TIMER;
-                        break;
-                    }
+						/* Quit the loop, returning error */
+						status = ATOM_ERR_TIMER;
+						break;
+					}
 
-                    /* Flag as no timeout registered */
-                    tcb_ptr->suspend_timo_cb = NULL;
+					/* Flag as no timeout registered */
+					tcb_ptr->suspend_timo_cb = NULL;
 
-                }
+				}
 
-                /* Exit critical region */
-                CRITICAL_END ();
+				/* Exit critical region */
+				CRITICAL_END();
 
-                /* Request a reschedule */
-                woken_threads = TRUE;
-            }
+				/* Request a reschedule */
+				woken_threads = TRUE;
+			}
 
-            /* No more suspended threads */
-            else
-            {
-                /* Exit critical region and quit the loop */
-                CRITICAL_END ();
-                break;
-            }
-        }
+			/* No more suspended threads */
+			else
+			{
+				/* Exit critical region and quit the loop */
+				CRITICAL_END();
+				break;
+			}
+		}
 
-        /* Call scheduler if any threads were woken up */
-        if (woken_threads == TRUE)
-        {
-            /**
-             * Only call the scheduler if we are in thread context, otherwise
-             * it will be called on exiting the ISR by atomIntExit().
-             */
-            if (atomCurrentContext())
-                atomSched (FALSE);
-        }
-    }
+		/* Call scheduler if any threads were woken up */
+		if (woken_threads == TRUE)
+		{
+			/**
+			 * Only call the scheduler if we are in thread context, otherwise
+			 * it will be called on exiting the ISR by atomIntExit().
+			 */
+			if (atomCurrentContext())
+				atomSched(FALSE);
+		}
+	}
 
-    return (status);
+	return (status);
 }

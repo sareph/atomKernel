@@ -194,7 +194,7 @@ static int atomIntCnt = 0;
 
 /* Forward declarations */
 static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb);
-static int atomIdleThread (void* data);
+static int atomIdleThread(void* data);
 
 
 /**
@@ -223,98 +223,98 @@ static int atomIdleThread (void* data);
 
 int atomPortPSV();
 
-void atomSched (uint8_t timer_tick)
+void atomSched(uint8_t timer_tick)
 {
-    CRITICAL_STORE;
-    ATOM_TCB *new_tcb = NULL;
-    int16_t lowest_pri;
+	CRITICAL_STORE;
+	ATOM_TCB *new_tcb = NULL;
+	int16_t lowest_pri;
 	
-    /**
-     * Check the OS has actually started. As long as the proper initialisation
-     * sequence is followed there should be no calls here until the OS is
-     * started, but we check to handle badly-behaved ports.
-     */
-    if (atomOSStarted == FALSE)
-    {
-        /* Don't schedule anything in until the OS is started */
-        return;
-    }
+	/**
+	 * Check the OS has actually started. As long as the proper initialisation
+	 * sequence is followed there should be no calls here until the OS is
+	 * started, but we check to handle badly-behaved ports.
+	 */
+	if (atomOSStarted == FALSE)
+	{
+		/* Don't schedule anything in until the OS is started */
+		return;
+	}
 
-    /* Enter critical section */
-    CRITICAL_START ();
+	/* Enter critical section */
+	CRITICAL_START();
 
-    /**
-     * If the current thread is going into suspension or is being
-     * terminated (run to completion), then unconditionally dequeue
-     * the next thread for execution.
-     */
-    if ((curr_tcb->suspended == TRUE) || (curr_tcb->terminated == TRUE))
-    {
-        /**
-         * Dequeue the next ready to run thread. There will always be
-         * at least the idle thread waiting. Note that this could
-         * actually be the suspending thread if it was unsuspended
-         * before the scheduler was called.
-         */
-        new_tcb = tcbDequeueHead (&tcbReadyQ);
+	/**
+	 * If the current thread is going into suspension or is being
+	 * terminated (run to completion), then unconditionally dequeue
+	 * the next thread for execution.
+	 */
+	if ((curr_tcb->suspended == TRUE) || (curr_tcb->terminated == TRUE))
+	{
+		/**
+		 * Dequeue the next ready to run thread. There will always be
+		 * at least the idle thread waiting. Note that this could
+		 * actually be the suspending thread if it was unsuspended
+		 * before the scheduler was called.
+		 */
+		new_tcb = tcbDequeueHead(&tcbReadyQ);
 
-        /**
-         * Don't need to add the current thread to any queue because
-         * it was suspended by another OS mechanism and will be
-         * sitting on a suspend queue or similar within one of the OS
-         * primitive libraries (e.g. semaphore).
-         */
+		/**
+		 * Don't need to add the current thread to any queue because
+		 * it was suspended by another OS mechanism and will be
+		 * sitting on a suspend queue or similar within one of the OS
+		 * primitive libraries (e.g. semaphore).
+		 */
 
-	    /* Switch to the new thread */
-        atomThreadSwitch (curr_tcb, new_tcb);
-    }
+		/* Switch to the new thread */
+		atomThreadSwitch(curr_tcb, new_tcb);
+	}
 
-    /**
-     * Otherwise the current thread is still ready, but check
-     * if any other threads are ready.
-     */
-    else
-    {
-        /* Calculate which priority is allowed to be scheduled in */
-        if (timer_tick == TRUE)
-        {
-            /* Same priority or higher threads can preempt */
-            lowest_pri = (int16_t)curr_tcb->priority;
-        }
-        else if (curr_tcb->priority > 0)
-        {
-            /* Only higher priority threads can preempt, invalid for 0 (highest) */
-            lowest_pri = (int16_t)(curr_tcb->priority - 1);
-        }
-        else
-        {
-            /**
-             * Current priority is already highest (0), don't allow preempt by
-             * threads of any priority because this is not a time-slice.
-             */
-            lowest_pri = -1;
-        }
+	/**
+	 * Otherwise the current thread is still ready, but check
+	 * if any other threads are ready.
+	 */
+	else
+	{
+		/* Calculate which priority is allowed to be scheduled in */
+		if (timer_tick == TRUE)
+		{
+			/* Same priority or higher threads can preempt */
+			lowest_pri = (int16_t)curr_tcb->priority;
+		}
+		else if (curr_tcb->priority > 0)
+		{
+			/* Only higher priority threads can preempt, invalid for 0 (highest) */
+			lowest_pri = (int16_t)(curr_tcb->priority - 1);
+		}
+		else
+		{
+			/**
+			 * Current priority is already highest (0), don't allow preempt by
+			 * threads of any priority because this is not a time-slice.
+			 */
+			lowest_pri = -1;
+		}
 
-        /* Check if a reschedule is allowed */
-        if (lowest_pri >= 0)
-        {
-            /* Check for a thread at the given minimum priority level or higher */
-            new_tcb = tcbDequeuePriority (&tcbReadyQ, (uint8_t)lowest_pri);
+		/* Check if a reschedule is allowed */
+		if (lowest_pri >= 0)
+		{
+			/* Check for a thread at the given minimum priority level or higher */
+			new_tcb = tcbDequeuePriority(&tcbReadyQ, (uint8_t)lowest_pri);
 
-            /* If a thread was found, schedule it in */
-            if (new_tcb)
-            {
-                /* Add the current thread to the ready queue */
-                (void)tcbEnqueuePriority (&tcbReadyQ, curr_tcb);
+			/* If a thread was found, schedule it in */
+			if (new_tcb)
+			{
+				/* Add the current thread to the ready queue */
+				(void)tcbEnqueuePriority(&tcbReadyQ, curr_tcb);
 
-                /* Switch to the new thread */
-                atomThreadSwitch (curr_tcb, new_tcb);
-            }
-        }
-    }
+				/* Switch to the new thread */
+				atomThreadSwitch(curr_tcb, new_tcb);
+			}
+		}
+	}
 
-    /* Exit critical section */
-    CRITICAL_END ();
+	/* Exit critical section */
+	CRITICAL_END();
 }
 
 
@@ -335,31 +335,31 @@ void atomSched (uint8_t timer_tick)
  */
 static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb)
 {
-    /**
-     * The context switch will shift execution to a different thread. The
-     * new thread is now ready to run so clear its suspend status in
-     * preparation for it waking up.
-     */
-    new_tcb->suspended = FALSE;
+	/**
+	 * The context switch will shift execution to a different thread. The
+	 * new thread is now ready to run so clear its suspend status in
+	 * preparation for it waking up.
+	 */
+	new_tcb->suspended = FALSE;
 
-    /**
-     * Check if the new thread is actually the current one, in which
-     * case we don't need to do any context switch. This can happen
-     * if a thread goes into suspend but is unsuspended again before
-     * it is fully scheduled out.
-     */
-    if (old_tcb != new_tcb)
-    {
-        /* Set the new currently-running thread pointer */
-        curr_tcb = new_tcb;
+	/**
+	 * Check if the new thread is actually the current one, in which
+	 * case we don't need to do any context switch. This can happen
+	 * if a thread goes into suspend but is unsuspended again before
+	 * it is fully scheduled out.
+	 */
+	if (old_tcb != new_tcb)
+	{
+		/* Set the new currently-running thread pointer */
+		curr_tcb = new_tcb;
 	    
 #if ATOM_KERNEL_TCB_AGEING
-	    /* Reset thread prioriti to it's original value */
-	    curr_tcb->priority = curr_tcb->base_priority;
+		/* Reset thread prioriti to it's original value */
+		curr_tcb->priority = curr_tcb->base_priority;
 #endif
-        /* Call the architecture-specific context switch */
-        archContextSwitch (old_tcb, new_tcb);
-    }
+		/* Call the architecture-specific context switch */
+		archContextSwitch(old_tcb, new_tcb);
+	}
 }
 
 atom_status_t atomThreadDestroy(ATOM_TCB *tcb_ptr, int *ret_value)
@@ -413,122 +413,122 @@ atom_status_t atomThreadDestroy(ATOM_TCB *tcb_ptr, int *ret_value)
  */
 atom_status_t atomThreadCreate(ATOM_TCB *tcb_ptr, atom_prio_t priority, _fnAtomThread entry_point, void* entry_param, void *stack_bottom, uint32_t stack_size, uint8_t stack_check)
 {
-    CRITICAL_STORE;
-    atom_status_t status;
-    uint8_t *stack_top;
+	CRITICAL_STORE;
+	atom_status_t status;
+	uint8_t *stack_top;
 #ifdef ATOM_STACK_CHECKING
 	int32_t count;
 #endif
 
-    if ((tcb_ptr == NULL) || (entry_point == NULL) || (stack_bottom == NULL)
-        || (stack_size == 0))
-    {
-        /* Bad parameters */
-        status = ATOM_ERR_PARAM;
-    }
-    else
-    {
+	if ((tcb_ptr == NULL) || (entry_point == NULL) || (stack_bottom == NULL)
+	    || (stack_size == 0))
+	{
+		/* Bad parameters */
+		status = ATOM_ERR_PARAM;
+	}
+	else
+	{
 
-        /* Set up the TCB initial values */
-        tcb_ptr->suspended = FALSE;
-        tcb_ptr->terminated = FALSE;
-        tcb_ptr->priority = priority;
+		/* Set up the TCB initial values */
+		tcb_ptr->suspended = FALSE;
+		tcb_ptr->terminated = FALSE;
+		tcb_ptr->priority = priority;
 #if ATOM_KERNEL_TCB_AGEING
-	    tcb_ptr->base_priority = priority;
+		tcb_ptr->base_priority = priority;
 #endif
-        tcb_ptr->prev_tcb = NULL;
-        tcb_ptr->next_tcb = NULL;
-        tcb_ptr->suspend_timo_cb = NULL;
-	    tcb_ptr->return_value = -1;
+		tcb_ptr->prev_tcb = NULL;
+		tcb_ptr->next_tcb = NULL;
+		tcb_ptr->suspend_timo_cb = NULL;
+		tcb_ptr->return_value = -1;
 
-        /**
-         * Store the thread entry point and parameter in the TCB. This may
-         * not be necessary for all architecture ports if they put all of
-         * this information in the initial thread stack.
-         */
-        tcb_ptr->entry_point = entry_point;
-        tcb_ptr->entry_param = entry_param;
+		/**
+		 * Store the thread entry point and parameter in the TCB. This may
+		 * not be necessary for all architecture ports if they put all of
+		 * this information in the initial thread stack.
+		 */
+		tcb_ptr->entry_point = entry_point;
+		tcb_ptr->entry_param = entry_param;
 
-        /**
-         * Calculate a pointer to the topmost stack entry, suitably aligned
-         * for the architecture. This may discard the top few bytes if the
-         * stack size is not a multiple of the stack entry/alignment size.
-         */
-        stack_top = (uint8_t *)stack_bottom + (stack_size & ~(STACK_ALIGN_SIZE - 1)) - STACK_ALIGN_SIZE;
+		/**
+		 * Calculate a pointer to the topmost stack entry, suitably aligned
+		 * for the architecture. This may discard the top few bytes if the
+		 * stack size is not a multiple of the stack entry/alignment size.
+		 */
+		stack_top = (uint8_t *)stack_bottom + (stack_size & ~(STACK_ALIGN_SIZE - 1)) - STACK_ALIGN_SIZE;
 
-        /**
-         * Additional processing only required if stack-checking is
-         * enabled. Incurs a slight overhead on each thread creation
-         * and uses some additional storage in the TCB, but can be
-         * compiled out if not desired.
-         */
+		/**
+		 * Additional processing only required if stack-checking is
+		 * enabled. Incurs a slight overhead on each thread creation
+		 * and uses some additional storage in the TCB, but can be
+		 * compiled out if not desired.
+		 */
 #ifdef ATOM_STACK_CHECKING
-        /* Set up stack-checking if enabled for this thread */
-        if (stack_check)
-        {
-            /* Store the stack details for use by the stack-check function */
-            tcb_ptr->stack_bottom = stack_bottom;
-            tcb_ptr->stack_size = stack_size;
+		         /* Set up stack-checking if enabled for this thread */
+		if (stack_check)
+		{
+			/* Store the stack details for use by the stack-check function */
+			tcb_ptr->stack_bottom = stack_bottom;
+			tcb_ptr->stack_size = stack_size;
 
-            /**
-             * Prefill the stack with a known value. This is used later in
-             * calls to atomThreadStackCheck() to get an indication of how
-             * much stack has been used during runtime.
-             */
-		    count = (int32_t)stack_size;
-            while (count > 0)
-            {
-                /* Initialise all stack bytes from top down to 0x5A */
-                *((uint8_t *)stack_bottom + (count - 1)) = STACK_CHECK_BYTE;
-                count--;
-            }
-        }
+			/**
+			 * Prefill the stack with a known value. This is used later in
+			 * calls to atomThreadStackCheck() to get an indication of how
+			 * much stack has been used during runtime.
+			 */
+			count = (int32_t)stack_size;
+			while (count > 0)
+			{
+				/* Initialise all stack bytes from top down to 0x5A */
+				*((uint8_t *)stack_bottom + (count - 1)) = STACK_CHECK_BYTE;
+				count--;
+			}
+		}
 #else
-        /* Avoid compiler warning due to unused parameter */
-        stack_check = stack_check;
+		/* Avoid compiler warning due to unused parameter */
+		stack_check = stack_check;
 #endif
 
-        /**
-         * Call the arch-specific routine to set up the stack. This routine
-         * is responsible for creating the context save area necessary for
-         * allowing atomThreadSwitch() to schedule it in. The initial
-         * archContextSwitch() call when this thread gets scheduled in the
-         * first time will then restore the program counter to the thread
-         * entry point, and any other necessary register values ready for
-         * it to start running.
-         */
-        archThreadContextInit (tcb_ptr, stack_top, entry_point, entry_param);
+		/**
+		 * Call the arch-specific routine to set up the stack. This routine
+		 * is responsible for creating the context save area necessary for
+		 * allowing atomThreadSwitch() to schedule it in. The initial
+		 * archContextSwitch() call when this thread gets scheduled in the
+		 * first time will then restore the program counter to the thread
+		 * entry point, and any other necessary register values ready for
+		 * it to start running.
+		 */
+		archThreadContextInit(tcb_ptr, stack_top, entry_point, entry_param);
 
-        /* Protect access to the OS queue */
-        CRITICAL_START ();
+		/* Protect access to the OS queue */
+		CRITICAL_START();
 
-        /* Put this thread on the ready queue */
-        if (tcbEnqueuePriority (&tcbReadyQ, tcb_ptr) != ATOM_OK)
-        {
-            /* Exit critical region */
-            CRITICAL_END ();
+		/* Put this thread on the ready queue */
+		if (tcbEnqueuePriority(&tcbReadyQ, tcb_ptr) != ATOM_OK)
+		{
+			/* Exit critical region */
+			CRITICAL_END();
 
-            /* Queue-related error */
-            status = ATOM_ERR_QUEUE;
-        }
-        else
-        {
-            /* Exit critical region */
-            CRITICAL_END ();
+			/* Queue-related error */
+			status = ATOM_ERR_QUEUE;
+		}
+		else
+		{
+			/* Exit critical region */
+			CRITICAL_END();
 
-            /**
-             * If the OS is started and we're in thread context, check if we
-             * should be scheduled in now.
-             */
-            if ((atomOSStarted == TRUE) && atomCurrentContext())
-                atomSched (FALSE);
+			/**
+			 * If the OS is started and we're in thread context, check if we
+			 * should be scheduled in now.
+			 */
+			if ((atomOSStarted == TRUE) && atomCurrentContext())
+				atomSched(FALSE);
 
-            /* Success */
-            status = ATOM_OK;
-        }
-    }
+			/* Success */
+			status = ATOM_OK;
+		}
+	}
 
-    return (status);
+	return (status);
 }
 
 
@@ -563,46 +563,46 @@ atom_status_t atomThreadCreate(ATOM_TCB *tcb_ptr, atom_prio_t priority, _fnAtomT
  * @retval ATOM_ERR_PARAM Bad parameters
  * @retval ATOM_ERR_QUEUE Error putting the thread on the ready queue
  */
-atom_status_t atomThreadStackCheck (ATOM_TCB *tcb_ptr, uint32_t *used_bytes, uint32_t *free_bytes)
+atom_status_t atomThreadStackCheck(ATOM_TCB *tcb_ptr, uint32_t *used_bytes, uint32_t *free_bytes)
 {
 	atom_status_t status;
-    uint8_t *stack_ptr;
-    int i;
+	uint8_t *stack_ptr;
+	int i;
 
-    if ((tcb_ptr == NULL) || (used_bytes == NULL) || (free_bytes == NULL))
-    {
-        /* Bad parameters */
-        status = ATOM_ERR_PARAM;
-    }
-    else
-    {
-        /**
-         * Starting at the bottom end, count the unmodified areas until a
-         * modified byte is found.
-         */
-        stack_ptr = (uint8_t *)tcb_ptr->stack_bottom;
-        for (i = 0; i < tcb_ptr->stack_size; i++)
-        {
-            /* Loop until a modified byte is found */
-            if (*stack_ptr++ != STACK_CHECK_BYTE)
-            {
-                /* Found a modified byte */
-                break;
-            }
-        }
+	if ((tcb_ptr == NULL) || (used_bytes == NULL) || (free_bytes == NULL))
+	{
+		/* Bad parameters */
+		status = ATOM_ERR_PARAM;
+	}
+	else
+	{
+		/**
+		 * Starting at the bottom end, count the unmodified areas until a
+		 * modified byte is found.
+		 */
+		stack_ptr = (uint8_t *)tcb_ptr->stack_bottom;
+		for (i = 0; i < tcb_ptr->stack_size; i++)
+		{
+			/* Loop until a modified byte is found */
+			if (*stack_ptr++ != STACK_CHECK_BYTE)
+			{
+				/* Found a modified byte */
+				break;
+			}
+		}
 
-        /* We quit the loop above on the count of the free bytes */
-        *free_bytes = (uint32_t)i;
+		/* We quit the loop above on the count of the free bytes */
+		*free_bytes = (uint32_t)i;
 
-        /* Calculate used bytes using our knowledge of the stack size */
-        *used_bytes = tcb_ptr->stack_size - *free_bytes;
+		/* Calculate used bytes using our knowledge of the stack size */
+		*used_bytes = tcb_ptr->stack_size - *free_bytes;
 
-        /* No error */
-        status = ATOM_OK;
+		/* No error */
+		status = ATOM_OK;
 
-    }
+	}
 
-    return (status);
+	return (status);
 
 }
 #endif /* ATOM_STACK_CHECKING */
@@ -618,10 +618,10 @@ atom_status_t atomThreadStackCheck (ATOM_TCB *tcb_ptr, uint32_t *used_bytes, uin
  *
  * @return None
  */
-void atomIntEnter (void)
+void atomIntEnter(void)
 {
-    /* Increment the interrupt count */
-    atomIntCnt++;
+	/* Increment the interrupt count */
+	atomIntCnt++;
 }
 
 
@@ -641,13 +641,13 @@ void atomIntEnter (void)
  *
  * @return None
  */
-void atomIntExit (uint8_t timer_tick)
+void atomIntExit(uint8_t timer_tick)
 {
-    /* Decrement the interrupt count */
-    atomIntCnt--;
+	/* Decrement the interrupt count */
+	atomIntCnt--;
 
-    /* Call the scheduler */
-    atomSched (timer_tick);
+	/* Call the scheduler */
+	atomSched(timer_tick);
 }
 
 
@@ -661,13 +661,13 @@ void atomIntExit (uint8_t timer_tick)
  *
  * @retval Pointer to current thread's TCB, NULL if in interrupt context
  */
-ATOM_TCB *atomCurrentContext (void)
+ATOM_TCB *atomCurrentContext(void)
 {
-    /* Return the current thread's TCB or NULL if in interrupt context */
-    if (atomIntCnt == 0)
-        return (curr_tcb);
-    else
-        return (NULL);
+	/* Return the current thread's TCB or NULL if in interrupt context */
+	if (atomIntCnt == 0)
+		return (curr_tcb);
+	else
+		return (NULL);
 }
 
 
@@ -707,22 +707,22 @@ atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_threa
 {
 	atom_status_t status;
 
-    /* Initialise data */
-    curr_tcb = NULL;
-    tcbReadyQ = NULL;
-    atomOSStarted = FALSE;
+	/* Initialise data */
+	curr_tcb = NULL;
+	tcbReadyQ = NULL;
+	atomOSStarted = FALSE;
 
-    /* Create the idle thread */
-    status = atomThreadCreate(&idle_tcb,
-                 IDLE_THREAD_PRIORITY,
-                 atomIdleThread,
-                 0,
-                 idle_thread_stack_bottom,
-                 idle_thread_stack_size,
-				 idle_thread_stack_check);
+	/* Create the idle thread */
+	status = atomThreadCreate(&idle_tcb,
+		IDLE_THREAD_PRIORITY,
+		atomIdleThread,
+		0,
+		idle_thread_stack_bottom,
+		idle_thread_stack_size,
+		idle_thread_stack_check);
 
-    /* Return status */
-    return (status);
+	/* Return status */
+	return (status);
 
 }
 /**
@@ -741,39 +741,39 @@ atom_status_t atomKernelInit(void *idle_thread_stack_bottom, uint32_t idle_threa
  *
  * @return None
  */
-void atomKernelStart (void)
+void atomKernelStart(void)
 {
-    ATOM_TCB *new_tcb;
+	ATOM_TCB *new_tcb;
 
-    /**
-     * Enable the OS started flag. This stops routines like atomThreadCreate()
-     * attempting to schedule in a newly-created thread until the scheduler is
-     * up and running.
-     */
-    atomOSStarted = TRUE;
+	/**
+	 * Enable the OS started flag. This stops routines like atomThreadCreate()
+	 * attempting to schedule in a newly-created thread until the scheduler is
+	 * up and running.
+	 */
+	atomOSStarted = TRUE;
 
-    /**
-     * Application calls to atomThreadCreate() should have added at least one
-     * thread to the ready queue. Take the highest priority one off and
-     * schedule it in. If no threads were created, the OS will simply start
-     * the idle thread (the lowest priority allowed to be scheduled is the
-     * idle thread's priority, 255).
-     */
-    new_tcb = tcbDequeuePriority (&tcbReadyQ, 127);
-    if (new_tcb)
-    {
-        /* Set the new currently-running thread pointer */
-        curr_tcb = new_tcb;
+	/**
+	 * Application calls to atomThreadCreate() should have added at least one
+	 * thread to the ready queue. Take the highest priority one off and
+	 * schedule it in. If no threads were created, the OS will simply start
+	 * the idle thread (the lowest priority allowed to be scheduled is the
+	 * idle thread's priority, 255).
+	 */
+	new_tcb = tcbDequeuePriority(&tcbReadyQ, 127);
+	if (new_tcb)
+	{
+		/* Set the new currently-running thread pointer */
+		curr_tcb = new_tcb;
 
-        /* Restore and run the first thread */
-        archFirstThreadRestore (new_tcb);
+		/* Restore and run the first thread */
+		archFirstThreadRestore(new_tcb);
 
-        /* Never returns to here, execution shifts to new thread context */
-    }
-    else
-    {
-        /* No ready threads were found. atomOSInit() probably was not called */
-    }
+		/* Never returns to here, execution shifts to new thread context */
+	}
+	else
+	{
+		/* No ready threads were found. atomOSInit() probably was not called */
+	}
 
 }
 
@@ -794,17 +794,17 @@ __weak void atomIdleHook()
  *
  * @return None
  */
-static int atomIdleThread (void* param)
+static int atomIdleThread(void* param)
 {
-    /* Compiler warning  */
-    param = param;
+	/* Compiler warning  */
+	param = param;
 
-    /* Loop forever */
-    while (1)
-    {
-        /** \todo Provide user idle hooks*/
-	    atomIdleHook();
-    }
+	/* Loop forever */
+	while (1)
+	{
+		/** \todo Provide user idle hooks*/
+		atomIdleHook();
+	}
 	
 	return 0;
 }
@@ -833,66 +833,66 @@ static int atomIdleThread (void* param)
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameters
  */
-uint8_t tcbEnqueuePriority (ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr)
+uint8_t tcbEnqueuePriority(ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr)
 {
 	atom_status_t status;
-    ATOM_TCB *prev_ptr, *next_ptr;
+	ATOM_TCB *prev_ptr, *next_ptr;
 
-    /* Parameter check */
-    if ((tcb_queue_ptr == NULL) || (tcb_ptr == NULL))
-    {
-        /* Return error */
-        status = ATOM_ERR_PARAM;
-    }
-    else
-    {
-        /* Walk the list and enqueue at the end of the TCBs at this priority */
-        prev_ptr = next_ptr = *tcb_queue_ptr;
-        do
-        {
-            /* Insert if:
-             *   next_ptr = NULL (we're at the head of an empty queue or at the tail)
-             *   the next TCB in the list is lower priority than the one we're enqueuing.
-             */
-            if ((next_ptr == NULL) || (next_ptr->priority > tcb_ptr->priority))
-            {
-                /* Make this TCB the new listhead */
-                if (next_ptr == *tcb_queue_ptr)
-                {
-                    *tcb_queue_ptr = tcb_ptr;
-                    tcb_ptr->prev_tcb = NULL;
-                    tcb_ptr->next_tcb = next_ptr;
-                    if (next_ptr)
-                        next_ptr->prev_tcb = tcb_ptr;
-                }
-                /* Insert between two TCBs or at the tail */
-                else
-                {
-                    tcb_ptr->prev_tcb = prev_ptr;
-                    tcb_ptr->next_tcb = next_ptr;
-                    prev_ptr->next_tcb = tcb_ptr;
-                    if (next_ptr)
-                        next_ptr->prev_tcb = tcb_ptr;
-                }
+	/* Parameter check */
+	if ((tcb_queue_ptr == NULL) || (tcb_ptr == NULL))
+	{
+		/* Return error */
+		status = ATOM_ERR_PARAM;
+	}
+	else
+	{
+		/* Walk the list and enqueue at the end of the TCBs at this priority */
+		prev_ptr = next_ptr = *tcb_queue_ptr;
+		do
+		{
+			/* Insert if:
+			 *   next_ptr = NULL (we're at the head of an empty queue or at the tail)
+			 *   the next TCB in the list is lower priority than the one we're enqueuing.
+			 */
+			if ((next_ptr == NULL) || (next_ptr->priority > tcb_ptr->priority))
+			{
+				/* Make this TCB the new listhead */
+				if (next_ptr == *tcb_queue_ptr)
+				{
+					*tcb_queue_ptr = tcb_ptr;
+					tcb_ptr->prev_tcb = NULL;
+					tcb_ptr->next_tcb = next_ptr;
+					if (next_ptr)
+						next_ptr->prev_tcb = tcb_ptr;
+				}
+				/* Insert between two TCBs or at the tail */
+				else
+				{
+					tcb_ptr->prev_tcb = prev_ptr;
+					tcb_ptr->next_tcb = next_ptr;
+					prev_ptr->next_tcb = tcb_ptr;
+					if (next_ptr)
+						next_ptr->prev_tcb = tcb_ptr;
+				}
 
-                /* Quit the loop, we've finished inserting */
-                break;
-            }
-            else
-            {
-                /* Not inserting here, try the next one */
-                prev_ptr = next_ptr;
-                next_ptr = next_ptr->next_tcb;
-            }
+				/* Quit the loop, we've finished inserting */
+				break;
+			}
+			else
+			{
+				/* Not inserting here, try the next one */
+				prev_ptr = next_ptr;
+				next_ptr = next_ptr->next_tcb;
+			}
 
-        }
-        while (prev_ptr != NULL);
+		}
+		while (prev_ptr != NULL);
 
-        /* Successful */
-        status = ATOM_OK;
-    }
+		/* Successful */
+		status = ATOM_OK;
+	}
 
-    return (status);
+	return (status);
 }
 
 
@@ -918,33 +918,33 @@ uint8_t tcbEnqueuePriority (ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr)
  *
  * @return Pointer to highest priority TCB on queue, or NULL if queue empty
  */
-ATOM_TCB *tcbDequeueHead (ATOM_TCB **tcb_queue_ptr)
+ATOM_TCB *tcbDequeueHead(ATOM_TCB **tcb_queue_ptr)
 {
-    ATOM_TCB *ret_ptr;
+	ATOM_TCB *ret_ptr;
 
-    /* Parameter check */
-    if (tcb_queue_ptr == NULL)
-    {
-        /* Return NULL */
-        ret_ptr = NULL;
-    }
-    /* Check for an empty queue */
-    else if (*tcb_queue_ptr == NULL)
-    {
-        /* Return NULL */
-        ret_ptr = NULL;
-    }
-    /* Remove and return the listhead */
-    else
-    {
-        ret_ptr = *tcb_queue_ptr;
-        *tcb_queue_ptr = ret_ptr->next_tcb;
-        if (*tcb_queue_ptr)
-            (*tcb_queue_ptr)->prev_tcb = NULL;
-        ret_ptr->next_tcb = ret_ptr->prev_tcb = NULL;
-    }
+	/* Parameter check */
+	if (tcb_queue_ptr == NULL)
+	{
+		/* Return NULL */
+		ret_ptr = NULL;
+	}
+	/* Check for an empty queue */
+	else if(*tcb_queue_ptr == NULL)
+	{
+		/* Return NULL */
+		ret_ptr = NULL;
+	}
+	/* Remove and return the listhead */
+	else
+	{
+		ret_ptr = *tcb_queue_ptr;
+		*tcb_queue_ptr = ret_ptr->next_tcb;
+		if (*tcb_queue_ptr)
+			(*tcb_queue_ptr)->prev_tcb = NULL;
+		ret_ptr->next_tcb = ret_ptr->prev_tcb = NULL;
+	}
 
-    return (ret_ptr);
+	return (ret_ptr);
 }
 
 
@@ -969,58 +969,58 @@ ATOM_TCB *tcbDequeueHead (ATOM_TCB **tcb_queue_ptr)
  *
  * @return Pointer to the dequeued TCB, or NULL if entry wasn't found
  */
-ATOM_TCB *tcbDequeueEntry (ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr)
+ATOM_TCB *tcbDequeueEntry(ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr)
 {
-    ATOM_TCB *ret_ptr, *prev_ptr, *next_ptr;
+	ATOM_TCB *ret_ptr, *prev_ptr, *next_ptr;
 
-    /* Parameter check */
-    if (tcb_queue_ptr == NULL)
-    {
-        /* Return NULL */
-        ret_ptr = NULL;
-    }
-    /* Check for an empty queue */
-    else if (*tcb_queue_ptr == NULL)
-    {
-        /* Return NULL */
-        ret_ptr = NULL;
-    }
-    /* Find and remove/return the specified entry */
-    else
-    {
-        ret_ptr = NULL;
-        prev_ptr = next_ptr = *tcb_queue_ptr;
-        while (next_ptr)
-        {
-            /* Is this entry the one we're looking for? */
-            if (next_ptr == tcb_ptr)
-            {
-                if (next_ptr == *tcb_queue_ptr)
-                {
-                    /* We're removing the list head */
-                    *tcb_queue_ptr = next_ptr->next_tcb;
-                    if (*tcb_queue_ptr)
-                        (*tcb_queue_ptr)->prev_tcb = NULL;
-                }
-                else
-                {
-                    /* We're removing a mid or tail TCB */
-                    prev_ptr->next_tcb = next_ptr->next_tcb;
-                    if (next_ptr->next_tcb)
-                        next_ptr->next_tcb->prev_tcb = prev_ptr;
-                }
-                ret_ptr = next_ptr;
-                ret_ptr->prev_tcb = ret_ptr->next_tcb = NULL;
-                break;
-            }
+	/* Parameter check */
+	if (tcb_queue_ptr == NULL)
+	{
+		/* Return NULL */
+		ret_ptr = NULL;
+	}
+	/* Check for an empty queue */
+	else if(*tcb_queue_ptr == NULL)
+	{
+		/* Return NULL */
+		ret_ptr = NULL;
+	}
+	/* Find and remove/return the specified entry */
+	else
+	{
+		ret_ptr = NULL;
+		prev_ptr = next_ptr = *tcb_queue_ptr;
+		while (next_ptr)
+		{
+			/* Is this entry the one we're looking for? */
+			if (next_ptr == tcb_ptr)
+			{
+				if (next_ptr == *tcb_queue_ptr)
+				{
+					/* We're removing the list head */
+					*tcb_queue_ptr = next_ptr->next_tcb;
+					if (*tcb_queue_ptr)
+						(*tcb_queue_ptr)->prev_tcb = NULL;
+				}
+				else
+				{
+					/* We're removing a mid or tail TCB */
+					prev_ptr->next_tcb = next_ptr->next_tcb;
+					if (next_ptr->next_tcb)
+						next_ptr->next_tcb->prev_tcb = prev_ptr;
+				}
+				ret_ptr = next_ptr;
+				ret_ptr->prev_tcb = ret_ptr->next_tcb = NULL;
+				break;
+			}
 
-            /* Move on to the next in the list */
-            prev_ptr = next_ptr;
-            next_ptr = next_ptr->next_tcb;
-        }
-    }
+			/* Move on to the next in the list */
+			prev_ptr = next_ptr;
+			next_ptr = next_ptr->next_tcb;
+		}
+	}
 
-    return (ret_ptr);
+	return (ret_ptr);
 }
 
 
@@ -1054,35 +1054,35 @@ ATOM_TCB *tcbDequeuePriority(ATOM_TCB **tcb_queue_ptr, atom_prio_t priority)
 {
 	ATOM_TCB *ret_ptr, *walk_ptr;
 
-    /* Parameter check */
-    if (tcb_queue_ptr == NULL)
-    {
-        /* Return NULL */
-        ret_ptr = NULL;
-    }
-    /* Check for an empty queue */
-    else if (*tcb_queue_ptr == NULL)
-    {
-        /* Return NULL */
-        ret_ptr = NULL;
-    }
-    /* Check if the list head priority is within our range */
-    else if ((*tcb_queue_ptr)->priority <= priority)
-    {
-       /* Remove the list head */
-        ret_ptr = *tcb_queue_ptr;
-        *tcb_queue_ptr = (*tcb_queue_ptr)->next_tcb;
-        if (*tcb_queue_ptr)
-        {
-            (*tcb_queue_ptr)->prev_tcb = NULL;
-            ret_ptr->next_tcb = NULL;
-        }
-    }
-    else
-    {
-        /* No higher priority ready threads found */
-        ret_ptr = NULL;
-    }
+	/* Parameter check */
+	if (tcb_queue_ptr == NULL)
+	{
+		/* Return NULL */
+		ret_ptr = NULL;
+	}
+	/* Check for an empty queue */
+	else if(*tcb_queue_ptr == NULL)
+	{
+		/* Return NULL */
+		ret_ptr = NULL;
+	}
+	/* Check if the list head priority is within our range */
+	else if((*tcb_queue_ptr)->priority <= priority)
+	{
+		/* Remove the list head */
+		ret_ptr = *tcb_queue_ptr;
+		*tcb_queue_ptr = (*tcb_queue_ptr)->next_tcb;
+		if (*tcb_queue_ptr)
+		{
+			(*tcb_queue_ptr)->prev_tcb = NULL;
+			ret_ptr->next_tcb = NULL;
+		}
+	}
+	else
+	{
+		/* No higher priority ready threads found */
+		ret_ptr = NULL;
+	}
 	
 #if ATOM_KERNEL_TCB_AGEING
 	walk_ptr = *tcb_queue_ptr;
@@ -1098,5 +1098,5 @@ ATOM_TCB *tcbDequeuePriority(ATOM_TCB **tcb_queue_ptr, atom_prio_t priority)
 		while (walk_ptr = walk_ptr->next_tcb);
 	}
 #endif
-    return (ret_ptr);
+	return (ret_ptr);
 }

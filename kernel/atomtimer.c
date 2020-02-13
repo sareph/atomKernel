@@ -75,7 +75,7 @@
 /* Delay callbacks data structure */
 typedef struct delay_timer
 {
-    ATOM_TCB *tcb_ptr;  /* Thread which is suspended with timeout */
+	ATOM_TCB *tcb_ptr; /* Thread which is suspended with timeout */
 
 } DELAY_TIMER;
 
@@ -92,8 +92,8 @@ static uint32_t system_ticks = 0;
 
 
 /* Forward declarations */
-static void atomTimerCallbacks (void);
-static void atomTimerDelayCallback (POINTER cb_data);
+static void atomTimerCallbacks(void);
+static void atomTimerDelayCallback(POINTER cb_data);
 
 
 /**
@@ -125,50 +125,50 @@ static void atomTimerDelayCallback (POINTER cb_data);
 atom_status_t atomTimerRegister(ATOM_TIMER *timer_ptr)
 {
 	atom_status_t status;
-    CRITICAL_STORE;
+	CRITICAL_STORE;
 
-    /* Parameter check */
-    if ((timer_ptr == NULL) || (timer_ptr->cb_func == NULL)
-        || (timer_ptr->cb_ticks == 0))
-    {
-        /* Return error */
-        status = ATOM_ERR_PARAM;
-    }
-    else
-    {
-        /* Protect the list */
-        CRITICAL_START ();
+	/* Parameter check */
+	if ((timer_ptr == NULL) || (timer_ptr->cb_func == NULL)
+	    || (timer_ptr->cb_ticks == 0))
+	{
+		/* Return error */
+		status = ATOM_ERR_PARAM;
+	}
+	else
+	{
+		/* Protect the list */
+		CRITICAL_START();
 
-        /*
-         * Enqueue in the list of timers.
-         *
-         * The list is not ordered, all timers are inserted at the start
-         * of the list. On each system tick increment the list is walked
-         * and the remaining ticks count for that timer is decremented.
-         * Once the remaining ticks reaches zero, the timer callback is
-         * made.
-         */
-        if (timer_queue == NULL)
-        {
-            /* List is empty, insert new head */
-            timer_ptr->next_timer = NULL;
-            timer_queue = timer_ptr;
-        }
-        else
-        {
-            /* List has at least one entry, enqueue new timer before */
-            timer_ptr->next_timer = timer_queue;
-            timer_queue = timer_ptr;
-        }
+		/*
+		 * Enqueue in the list of timers.
+		 *
+		 * The list is not ordered, all timers are inserted at the start
+		 * of the list. On each system tick increment the list is walked
+		 * and the remaining ticks count for that timer is decremented.
+		 * Once the remaining ticks reaches zero, the timer callback is
+		 * made.
+		 */
+		if (timer_queue == NULL)
+		{
+			/* List is empty, insert new head */
+			timer_ptr->next_timer = NULL;
+			timer_queue = timer_ptr;
+		}
+		else
+		{
+			/* List has at least one entry, enqueue new timer before */
+			timer_ptr->next_timer = timer_queue;
+			timer_queue = timer_ptr;
+		}
 
-        /* End of list protection */
-        CRITICAL_END ();
+		/* End of list protection */
+		CRITICAL_END();
 
-        /* Successful */
-        status = ATOM_OK;
-    }
+		/* Successful */
+		status = ATOM_OK;
+	}
 
-    return (status);
+	return (status);
 }
 
 
@@ -190,54 +190,54 @@ atom_status_t atomTimerRegister(ATOM_TIMER *timer_ptr)
 atom_status_t atomTimerCancel(ATOM_TIMER *timer_ptr)
 {
 	atom_status_t status = ATOM_ERR_NOT_FOUND;
-    ATOM_TIMER *prev_ptr, *next_ptr;
-    CRITICAL_STORE;
+	ATOM_TIMER *prev_ptr, *next_ptr;
+	CRITICAL_STORE;
 
-    /* Parameter check */
-    if (timer_ptr == NULL)
-    {
-        /* Return error */
-        status = ATOM_ERR_PARAM;
-    }
-    else
-    {
-        /* Protect the list */
-        CRITICAL_START ();
+	/* Parameter check */
+	if (timer_ptr == NULL)
+	{
+		/* Return error */
+		status = ATOM_ERR_PARAM;
+	}
+	else
+	{
+		/* Protect the list */
+		CRITICAL_START();
 
-        /* Walk the list to find the relevant timer */
-        prev_ptr = next_ptr = timer_queue;
-        while (next_ptr)
-        {
-            /* Is this entry the one we're looking for? */
-            if (next_ptr == timer_ptr)
-            {
-                if (next_ptr == timer_queue)
-                {
-                    /* We're removing the list head */
-                    timer_queue = next_ptr->next_timer;
-                }
-                else
-                {
-                    /* We're removing a mid or tail TCB */
-                    prev_ptr->next_timer = next_ptr->next_timer;
-                }
+		/* Walk the list to find the relevant timer */
+		prev_ptr = next_ptr = timer_queue;
+		while (next_ptr)
+		{
+			/* Is this entry the one we're looking for? */
+			if (next_ptr == timer_ptr)
+			{
+				if (next_ptr == timer_queue)
+				{
+					/* We're removing the list head */
+					timer_queue = next_ptr->next_timer;
+				}
+				else
+				{
+					/* We're removing a mid or tail TCB */
+					prev_ptr->next_timer = next_ptr->next_timer;
+				}
 
-                /* Successful */
-                status = ATOM_OK;
-                break;
-            }
+				/* Successful */
+				status = ATOM_OK;
+				break;
+			}
 
-            /* Move on to the next in the list */
-            prev_ptr = next_ptr;
-            next_ptr = next_ptr->next_timer;
+			/* Move on to the next in the list */
+			prev_ptr = next_ptr;
+			next_ptr = next_ptr->next_timer;
 
-        }
+		}
 
-        /* End of list protection */
-        CRITICAL_END ();
-     }
+		/* End of list protection */
+		CRITICAL_END();
+	}
 
-    return (status);
+	return (status);
 }
 
 
@@ -253,7 +253,7 @@ atom_status_t atomTimerCancel(ATOM_TIMER *timer_ptr)
  */
 uint32_t atomTimeGet(void)
 {
-    return (system_ticks);
+	return (system_ticks);
 }
 
 
@@ -275,7 +275,7 @@ uint32_t atomTimeGet(void)
  */
 void atomTimeSet(uint32_t new_time)
 {
-    system_ticks = new_time;
+	system_ticks = new_time;
 }
 
 
@@ -292,17 +292,17 @@ void atomTimeSet(uint32_t new_time)
  *
  * @return None
  */
-void atomTimerTick (void)
+void atomTimerTick(void)
 {
-    /* Only do anything if the OS is started */
-    if (atomOSStarted)
-    {
-        /* Increment the system tick count */
-        system_ticks++;
+	/* Only do anything if the OS is started */
+	if (atomOSStarted)
+	{
+		/* Increment the system tick count */
+		system_ticks++;
 
-        /* Check for any callbacks that are due */
-        atomTimerCallbacks ();
-    }
+		/* Check for any callbacks that are due */
+		atomTimerCallbacks();
+	}
 }
 
 
@@ -324,76 +324,76 @@ void atomTimerTick (void)
  * @retval ATOM_ERR_PARAM Bad parameter (ticks must be non-zero)
  * @retval ATOM_ERR_CONTEXT Not called from thread context
  */
-atom_status_t atomTimerDelay (uint32_t ticks)
+atom_status_t atomTimerDelay(uint32_t ticks)
 {
-    ATOM_TCB *curr_tcb_ptr;
-    ATOM_TIMER timer_cb;
-    DELAY_TIMER timer_data;
-    CRITICAL_STORE;
+	ATOM_TCB *curr_tcb_ptr;
+	ATOM_TIMER timer_cb;
+	DELAY_TIMER timer_data;
+	CRITICAL_STORE;
 	atom_status_t status;
 
-    /* Get the current TCB  */
-    curr_tcb_ptr = atomCurrentContext();
+	/* Get the current TCB  */
+	curr_tcb_ptr = atomCurrentContext();
 
-    /* Parameter check */
-    if (ticks == 0)
-    {
-        /* Return error */
-        status = ATOM_ERR_PARAM;
-    }
+	/* Parameter check */
+	if (ticks == 0)
+	{
+		/* Return error */
+		status = ATOM_ERR_PARAM;
+	}
 
-    /* Check we are actually in thread context */
-    else if (curr_tcb_ptr == NULL)
-    {
-        /* Not currently in thread context, can't suspend */
-        status = ATOM_ERR_CONTEXT;
-    }
+	/* Check we are actually in thread context */
+	else if(curr_tcb_ptr == NULL)
+	{
+		/* Not currently in thread context, can't suspend */
+		status = ATOM_ERR_CONTEXT;
+	}
 
-    /* Otherwise safe to proceed */
-    else
-    {
-        /* Protect the system queues */
-        CRITICAL_START ();
+	/* Otherwise safe to proceed */
+	else
+	{
+		/* Protect the system queues */
+		CRITICAL_START();
 
-        /* Set suspended status for the current thread */
-        curr_tcb_ptr->suspended = TRUE;
+		/* Set suspended status for the current thread */
+		curr_tcb_ptr->suspended = TRUE;
 
-        /* Register the timer callback */
+		/* Register the timer callback */
 
-        /* Fill out the data needed by the callback to wake us up */
-        timer_data.tcb_ptr = curr_tcb_ptr;
+		/* Fill out the data needed by the callback to wake us up */
+		timer_data.tcb_ptr = curr_tcb_ptr;
 
-        /* Fill out the timer callback request structure */
-        timer_cb.cb_func = atomTimerDelayCallback;
-        timer_cb.cb_data = (POINTER)&timer_data;
-        timer_cb.cb_ticks = ticks;
+		/* Fill out the timer callback request structure */
+		timer_cb.cb_func = atomTimerDelayCallback;
+		timer_cb.cb_data = (POINTER)&timer_data;
+		timer_cb.cb_ticks = ticks;
 
-        /* Store the timeout callback details, though we don't use it */
-        curr_tcb_ptr->suspend_timo_cb = &timer_cb;
+		/* Store the timeout callback details, though we don't use it */
+		curr_tcb_ptr->suspend_timo_cb = &timer_cb;
 
-        /* Register the callback */
-        if (atomTimerRegister (&timer_cb) != ATOM_OK)
-        {
-            /* Exit critical region */
-            CRITICAL_END ();
+		/* Register the callback */
+		if (atomTimerRegister(&timer_cb) != ATOM_OK)
+		{
+			/* Exit critical region */
+			CRITICAL_END();
 
-            /* Timer registration didn't work, won't get a callback */
-            status = ATOM_ERR_TIMER;
-        }
-        else
-        {
-            /* Exit critical region */
-            CRITICAL_END ();
+			/* Timer registration didn't work, won't get a callback */
+			status = ATOM_ERR_TIMER;
+		}
+		else
+		{
+			/* Exit critical region */
+			CRITICAL_END();
 
-            /* Successful timer registration */
-            status = ATOM_OK;
+			/* Successful timer registration */
+			status = ATOM_OK;
 
-            /* Current thread should now block, schedule in another */
-            atomSched (FALSE);
-        }
-    }
+			/* Current thread should now block, schedule in another */
+			atomSched(FALSE);
+		}
+	}
 
-    return (status);
+	return (status);
 }
 
 
@@ -406,104 +406,104 @@ atom_status_t atomTimerDelay (uint32_t ticks)
  *
  * @return None
  */
-static void atomTimerCallbacks (void)
+static void atomTimerCallbacks(void)
 {
-    ATOM_TIMER *prev_ptr, *next_ptr, *saved_next_ptr;
-    ATOM_TIMER *callback_list_tail = NULL, *callback_list_head = NULL;
+	ATOM_TIMER *prev_ptr, *next_ptr, *saved_next_ptr;
+	ATOM_TIMER *callback_list_tail = NULL, *callback_list_head = NULL;
 
-    /*
-     * Walk the list decrementing each timer's remaining ticks count and
-     * looking for due callbacks.
-     */
-    prev_ptr = next_ptr = timer_queue;
-    while (next_ptr)
-    {
-        /* Save the next timer in the list (we adjust next_ptr for callbacks) */
-        saved_next_ptr = next_ptr->next_timer;
+	/*
+	 * Walk the list decrementing each timer's remaining ticks count and
+	 * looking for due callbacks.
+	 */
+	prev_ptr = next_ptr = timer_queue;
+	while (next_ptr)
+	{
+		/* Save the next timer in the list (we adjust next_ptr for callbacks) */
+		saved_next_ptr = next_ptr->next_timer;
  
-        /* Is this entry due? */
-        if (--(next_ptr->cb_ticks) == 0)
-        {
-            /* Remove the entry from the timer list */
-            if (next_ptr == timer_queue)
-            {
-                /* We're removing the list head */
-                timer_queue = next_ptr->next_timer;
-            }
-            else
-            {
-                /* We're removing a mid or tail timer */
-                prev_ptr->next_timer = next_ptr->next_timer;
-            }
+		/* Is this entry due? */
+		if (--(next_ptr->cb_ticks) == 0)
+		{
+			/* Remove the entry from the timer list */
+			if (next_ptr == timer_queue)
+			{
+				/* We're removing the list head */
+				timer_queue = next_ptr->next_timer;
+			}
+			else
+			{
+				/* We're removing a mid or tail timer */
+				prev_ptr->next_timer = next_ptr->next_timer;
+			}
 
-            /*
-             * Add this timer to the list of callbacks to run later when
-             * we've finished walking the list (we shouldn't call callbacks
-             * now in case they want to register new timers and hence walk
-             * the timer list.
-             *
-             * We reuse the ATOM_TIMER structure's next_ptr to maintain the
-             * callback list.
-             */
-            if (callback_list_head == NULL)
-            {
-                /* First callback request in the list */ 
-                callback_list_head = callback_list_tail = next_ptr;
-            }
-            else
-            {
-                /* Add callback request to the list tail */
-                callback_list_tail->next_timer = next_ptr;
-                callback_list_tail = callback_list_tail->next_timer;
-            }
+			/*
+			 * Add this timer to the list of callbacks to run later when
+			 * we've finished walking the list (we shouldn't call callbacks
+			 * now in case they want to register new timers and hence walk
+			 * the timer list.
+			 *
+			 * We reuse the ATOM_TIMER structure's next_ptr to maintain the
+			 * callback list.
+			 */
+			if (callback_list_head == NULL)
+			{
+				/* First callback request in the list */ 
+				callback_list_head = callback_list_tail = next_ptr;
+			}
+			else
+			{
+				/* Add callback request to the list tail */
+				callback_list_tail->next_timer = next_ptr;
+				callback_list_tail = callback_list_tail->next_timer;
+			}
 
-            /* Mark this timer as the end of the callback list */
-            next_ptr->next_timer = NULL;
+			/* Mark this timer as the end of the callback list */
+			next_ptr->next_timer = NULL;
 
-            /* Do not update prev_ptr, we have just removed this one */
+			/* Do not update prev_ptr, we have just removed this one */
 
-        }
+		}
 
-        /* Entry is not due, leave it in there with its count decremented */
-        else
-        {
-            /*
-             * Update prev_ptr to this entry. We will need it if we want
-             * to remove a mid or tail timer.
-             */
-            prev_ptr = next_ptr;
-        }
+		/* Entry is not due, leave it in there with its count decremented */
+		else
+		{
+			/*
+			 * Update prev_ptr to this entry. We will need it if we want
+			 * to remove a mid or tail timer.
+			 */
+			prev_ptr = next_ptr;
+		}
 
-        /* Move on to the next in the list */
-        next_ptr = saved_next_ptr;
-    }
+		/* Move on to the next in the list */
+		next_ptr = saved_next_ptr;
+	}
 
-    /*
-     * Check if any callbacks were due. We call them after we walk the list
-     * in case they want to register new timers (and hence walk the list).
-     */
-    if (callback_list_head)
-    {
-        /* Walk the callback list */
-        next_ptr = callback_list_head;
-        while (next_ptr)
-        {
-            /*
-             *  Save the next timer in the list (in case the callback
-             *  modifies the list by registering again.
-             */
-            saved_next_ptr = next_ptr->next_timer;
+	/*
+	 * Check if any callbacks were due. We call them after we walk the list
+	 * in case they want to register new timers (and hence walk the list).
+	 */
+	if (callback_list_head)
+	{
+		/* Walk the callback list */
+		next_ptr = callback_list_head;
+		while (next_ptr)
+		{
+			/*
+			 *  Save the next timer in the list (in case the callback
+			 *  modifies the list by registering again.
+			 */
+			saved_next_ptr = next_ptr->next_timer;
 
-            /* Call the registered callback */
-            if (next_ptr->cb_func)
-            {
-                next_ptr->cb_func (next_ptr->cb_data);
-            }
+			/* Call the registered callback */
+			if (next_ptr->cb_func)
+			{
+				next_ptr->cb_func(next_ptr->cb_data);
+			}
 
-            /* Move on to the next callback in the list */
-            next_ptr = saved_next_ptr;
-        }
-    }
+			/* Move on to the next callback in the list */
+			next_ptr = saved_next_ptr;
+		}
+	}
 
 }
 
@@ -519,31 +519,31 @@ static void atomTimerCallbacks (void)
  *
  * @return None
  */
-static void atomTimerDelayCallback (POINTER cb_data)
+static void atomTimerDelayCallback(POINTER cb_data)
 {
-    DELAY_TIMER *timer_data_ptr;
-    CRITICAL_STORE;
+	DELAY_TIMER *timer_data_ptr;
+	CRITICAL_STORE;
 
-    /* Get the DELAY_TIMER structure pointer */
-    timer_data_ptr = (DELAY_TIMER *)cb_data;
+	/* Get the DELAY_TIMER structure pointer */
+	timer_data_ptr = (DELAY_TIMER *)cb_data;
 
-    /* Check parameter is valid */
-    if (timer_data_ptr)
-    {
-        /* Enter critical region */
-        CRITICAL_START ();
+	/* Check parameter is valid */
+	if (timer_data_ptr)
+	{
+		/* Enter critical region */
+		CRITICAL_START();
 
-        /* Put the thread on the ready queue */
-        (void)tcbEnqueuePriority (&tcbReadyQ, timer_data_ptr->tcb_ptr);
+		/* Put the thread on the ready queue */
+		(void)tcbEnqueuePriority(&tcbReadyQ, timer_data_ptr->tcb_ptr);
 
-        /* Exit critical region */
-        CRITICAL_END ();
+		/* Exit critical region */
+		CRITICAL_END();
 
-        /**
-         * Don't call the scheduler yet. The ISR exit routine will do this
-         * in case there are other callbacks to be made, which may also make
-         * threads ready.
-         */
-    }
+		/**
+		 * Don't call the scheduler yet. The ISR exit routine will do this
+		 * in case there are other callbacks to be made, which may also make
+		 * threads ready.
+		 */
+	}
 }
 

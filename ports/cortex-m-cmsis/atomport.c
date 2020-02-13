@@ -49,6 +49,10 @@
 static int32_t lMallocLocks = 0;
 static uint32_t lPrimask;
 
+/*
+ * This has to work from interrupts too, so no mutexes
+ * */
+
 void __malloc_lock(struct _reent *reent)
 {
 	if (lMallocLocks == 0)
@@ -71,17 +75,17 @@ void __malloc_unlock(struct _reent *reent)
 
 static void thread_shell(void);
 
-struct task_switch_info ctx_switch_info =// asm("CTX_SW_NFO") =
+struct task_switch_info ctx_switch_info =
 {
-    .running_tcb = NULL,
-    .next_tcb    = NULL,
+	.running_tcb = NULL,
+	.next_tcb = NULL,
 };
 
 void archFirstThreadRestore(ATOM_TCB *new_tcb_ptr)
 {
 #if defined(__NEWLIB__) && ATOM_NEWLIB_REENT
-    ctx_switch_info.reent = &(new_tcb_ptr->port_priv.reent);
-    __DSB();
+	ctx_switch_info.reent = &(new_tcb_ptr->port_priv.reent);
+	__DSB();
 #endif
 
 	__disable_irq();
@@ -89,7 +93,7 @@ void archFirstThreadRestore(ATOM_TCB *new_tcb_ptr)
 	ctx_switch_info.next_tcb = new_tcb_ptr;
 	ctx_switch_info.running_tcb = new_tcb_ptr;
 	
-    //_archFirstThreadRestore(new_tcb_ptr);
+	//_archFirstThreadRestore(new_tcb_ptr);
 	__asm volatile 
 	(	
     /**
@@ -227,30 +231,30 @@ void archFirstThreadRestore(ATOM_TCB *new_tcb_ptr)
  * calling thread. Unless, of course, the thread called atomSched() with
  * disabled interrupts, which it should not do anyways...
  */
-void __attribute__((noinline))
-archContextSwitch(ATOM_TCB *old_tcb_ptr __maybe_unused, ATOM_TCB *new_tcb_ptr)
+void __attribute__((noinline)) archContextSwitch(ATOM_TCB *old_tcb_ptr __maybe_unused, ATOM_TCB *new_tcb_ptr)
 {
-    if(likely(ctx_switch_info.running_tcb != NULL)){
-        ctx_switch_info.next_tcb = new_tcb_ptr;
+	if (likely(ctx_switch_info.running_tcb != NULL))
+	{
+		ctx_switch_info.next_tcb = new_tcb_ptr;
 #if defined(__NEWLIB__) && ATOM_NEWLIB_REENT
-        ctx_switch_info.reent = &(new_tcb_ptr->port_priv.reent);
+		ctx_switch_info.reent = &(new_tcb_ptr->port_priv.reent);
 #endif
 		__DSB();
 
-        SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-    }
+		SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+	}
 }
 
 void sys_tick_handler(void)
 {
-    /* Call the interrupt entry routine */
-    atomIntEnter();
+	/* Call the interrupt entry routine */
+	atomIntEnter();
 
-    /* Call the OS system tick handler */
-    atomTimerTick();
+	/* Call the OS system tick handler */
+	atomTimerTick();
 
-    /* Call the interrupt exit routine */
-    atomIntExit(TRUE);
+	/* Call the interrupt exit routine */
+	atomIntExit(TRUE);
 }
 
 void __attribute__((naked)) PendSV_Handler()
@@ -437,21 +441,22 @@ void __attribute__((naked)) PendSV_Handler()
  */
 static void thread_shell(void)
 {
-    ATOM_TCB *task_ptr;
+	ATOM_TCB *task_ptr;
 
-    /**
-     * We "return" to here after being scheduled in by the pend_sv_handler.
-     * We get a pointer to our TCB from atomCurrentContext()
-     */
-    task_ptr = atomCurrentContext();
+	/**
+	 * We "return" to here after being scheduled in by the pend_sv_handler.
+	 * We get a pointer to our TCB from atomCurrentContext()
+	 */
+	task_ptr = atomCurrentContext();
 
-    /**
-     * Our thread entry point and parameter are stored in the TCB.
-     * Call it if it is valid
-     */
-    if(task_ptr && task_ptr->entry_point) {
-        task_ptr->return_value = task_ptr->entry_point(task_ptr->entry_param);
-    }
+	/**
+	 * Our thread entry point and parameter are stored in the TCB.
+	 * Call it if it is valid
+	 */
+	if (task_ptr && task_ptr->entry_point)
+	{
+		task_ptr->return_value = task_ptr->entry_point(task_ptr->entry_param);
+	}
 
 	/**
 	 * If thread returned, store it's rv in TCB and mark asa termminated
@@ -466,87 +471,99 @@ static void thread_shell(void)
  * Initialise a threads stack so it can be scheduled in by
  * archFirstThreadRestore or the pend_sv_handler.
  */
-void archThreadContextInit(ATOM_TCB *tcb_ptr, void *stack_top,
-	_fnAtomThread entry_point, void* entry_param)
+void archThreadContextInit(ATOM_TCB *tcb_ptr,
+	void *stack_top,
+	_fnAtomThread entry_point,
+	void* entry_param)
 {
-    struct isr_stack *isr_ctx;
-    struct task_stack *tsk_ctx;
+	struct isr_stack *isr_ctx;
+	struct task_stack *tsk_ctx;
 
-    /**
-     * Do compile time verification for offsets used in _archFirstThreadRestore
-     * and pend_sv_handler. If compilation aborts here, you will have to adjust
-     * the offsets for struct task_switch_info's members in asm-offsets.h
-     */
-    assert_static(offsetof(struct task_switch_info, running_tcb) == CTX_RUN_OFF);
-    assert_static(offsetof(struct task_switch_info, next_tcb) == CTX_NEXT_OFF);
+	/**
+	 * Do compile time verification for offsets used in _archFirstThreadRestore
+	 * and pend_sv_handler. If compilation aborts here, you will have to adjust
+	 * the offsets for struct task_switch_info's members in asm-offsets.h
+	 */
+	assert_static(offsetof(struct task_switch_info, running_tcb) == CTX_RUN_OFF);
+	assert_static(offsetof(struct task_switch_info, next_tcb) == CTX_NEXT_OFF);
 #if defined(__NEWLIB__) && ATOM_NEWLIB_REENT
-    assert_static(offsetof(struct task_switch_info, reent) == CTX_REENT_OFF);
+	assert_static(offsetof(struct task_switch_info, reent) == CTX_REENT_OFF);
 #endif
 
-    /**
-     * Enforce initial stack alignment
-     */
-    stack_top = STACK_ALIGN(stack_top, STACK_ALIGN_SIZE);
+	/**
+	 * Enforce initial stack alignment
+	 */
+	stack_top = STACK_ALIGN(stack_top, STACK_ALIGN_SIZE);
 
-    /**
-     * New threads will be scheduled from an exception handler, so we have to
-     * set up an exception stack frame as well as task stack frame
-     */
-    isr_ctx = stack_top - sizeof(*isr_ctx);
-    tsk_ctx = stack_top - sizeof(*isr_ctx) - sizeof(*tsk_ctx);
+	/**
+	 * New threads will be scheduled from an exception handler, so we have to
+	 * set up an exception stack frame as well as task stack frame
+	 */
+	isr_ctx = stack_top - sizeof(*isr_ctx);
+	tsk_ctx = stack_top - sizeof(*isr_ctx) - sizeof(*tsk_ctx);
 
 #if 0
-    printf("[%s] tcb_ptr: %p stack_top: %p isr_ctx: %p tsk_ctx: %p entry_point: %p, entry_param: 0x%x\n",
-            __func__, tcb_ptr, stack_top, isr_ctx, tsk_ctx, entry_point, entry_param);
-    printf("[%s] isr_ctx->r0: %p isr_ctx->psr: %p tsk_ctx->r4: %p tsk_ctx->lr: %p\n",
-            __func__, &isr_ctx->r0, &isr_ctx->psr, &tsk_ctx->r4, &tsk_ctx->lr);
+	printf("[%s] tcb_ptr: %p stack_top: %p isr_ctx: %p tsk_ctx: %p entry_point: %p, entry_param: 0x%x\n",
+		__func__,
+		tcb_ptr,
+		stack_top,
+		isr_ctx,
+		tsk_ctx,
+		entry_point,
+		entry_param);
+	printf("[%s] isr_ctx->r0: %p isr_ctx->psr: %p tsk_ctx->r4: %p tsk_ctx->lr: %p\n",
+		__func__,
+		&isr_ctx->r0,
+		&isr_ctx->psr,
+		&tsk_ctx->r4,
+		&tsk_ctx->lr);
 #endif
-    /**
-     * We use the exception return mechanism to jump to our thread_shell()
-     * function and initialise the PSR to the default value (thumb state
-     * flag set and nothing else)
-     */
-    isr_ctx->psr = 0x01000000;
-    isr_ctx->pc  = (uint32_t) thread_shell;
+	/**
+	 * We use the exception return mechanism to jump to our thread_shell()
+	 * function and initialise the PSR to the default value (thumb state
+	 * flag set and nothing else)
+	 */
+	isr_ctx->psr = 0x01000000;
+	isr_ctx->pc  = (uint32_t) thread_shell;
 
-    /* initialise unused registers to silly value */
-    isr_ctx->lr  = 0xEEEEEEEE;
-    isr_ctx->r12 = 0xCCCCCCCC;
-    isr_ctx->r3  = 0x33333333;
-    isr_ctx->r2  = 0x22222222;
-    isr_ctx->r1  = 0x11111111;
-    isr_ctx->r0  = 0x00000000;
+	/* initialise unused registers to silly value */
+	isr_ctx->lr  = 0xEEEEEEEE;
+	isr_ctx->r12 = 0xCCCCCCCC;
+	isr_ctx->r3  = 0x33333333;
+	isr_ctx->r2  = 0x22222222;
+	isr_ctx->r1  = 0x11111111;
+	isr_ctx->r0  = 0x00000000;
 
-    /**
-     * We use this special EXC_RETURN code to switch from main stack to our
-     * thread stack on exception return
-     */
-    tsk_ctx->exc_ret = 0xFFFFFFFD;
+	/**
+	 * We use this special EXC_RETURN code to switch from main stack to our
+	 * thread stack on exception return
+	 */
+	tsk_ctx->exc_ret = 0xFFFFFFFD;
 
-    /* initialise unused registers to silly value */
-    tsk_ctx->r11 = 0xBBBBBBBB;
-    tsk_ctx->r10 = 0xAAAAAAAA;
-    tsk_ctx->r9  = 0x99999999;
-    tsk_ctx->r8  = 0x88888888;
-    tsk_ctx->r7  = 0x77777777;
-    tsk_ctx->r6  = 0x66666666;
-    tsk_ctx->r5  = 0x55555555;
-    tsk_ctx->r4  = 0x44444444;
+	/* initialise unused registers to silly value */
+	tsk_ctx->r11 = 0xBBBBBBBB;
+	tsk_ctx->r10 = 0xAAAAAAAA;
+	tsk_ctx->r9  = 0x99999999;
+	tsk_ctx->r8  = 0x88888888;
+	tsk_ctx->r7  = 0x77777777;
+	tsk_ctx->r6  = 0x66666666;
+	tsk_ctx->r5  = 0x55555555;
+	tsk_ctx->r4  = 0x44444444;
 
-    /**
-     * Stack frames have been initialised, save it to the TCB. Also set
-     * the thread's real entry point and param, so the thread shell knows
-     * what function to call.
-     */
-    tcb_ptr->sp_save_ptr = tsk_ctx;
-    tcb_ptr->entry_point = entry_point;
-    tcb_ptr->entry_param = entry_param;
+	/**
+	 * Stack frames have been initialised, save it to the TCB. Also set
+	 * the thread's real entry point and param, so the thread shell knows
+	 * what function to call.
+	 */
+	tcb_ptr->sp_save_ptr = tsk_ctx;
+	tcb_ptr->entry_point = entry_point;
+	tcb_ptr->entry_param = entry_param;
 
 #if defined(__NEWLIB__) && ATOM_NEWLIB_REENT
-    /**
-     * Initialise thread's reentry context for newlib
-     */ 
-    _REENT_INIT_PTR(&(tcb_ptr->port_priv.reent));
+	/**
+	 * Initialise thread's reentry context for newlib
+	 */ 
+	_REENT_INIT_PTR(&(tcb_ptr->port_priv.reent));
 #endif
 }
 
