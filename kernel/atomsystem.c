@@ -18,6 +18,7 @@ atom_status_t atomOSInit(size_t idleThreadStack, void *idleThreadParam)
 	
 	if ((ret = atomPortInit()) != ATOM_OK)
 	{
+		atom_assert(0, "Port init failed");
 		return ret;
 	}
 	
@@ -26,6 +27,7 @@ atom_status_t atomOSInit(size_t idleThreadStack, void *idleThreadParam)
 	
 	if ((ret = atomKernelInit((void*)&lMasterStack[lMasterStackSize], idleThreadStack, idleThreadParam)) != ATOM_OK)
 	{
+		atom_assert(0, "Kernel init falied");
 		return ret;
 	}
 	
@@ -37,14 +39,15 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
 {
 	atom_status_t ret;
 	
-	atom_assert((lMasterStackSize + threadStack) > ATOM_SYSTEM_STACK_SIZE, "No more space in system stack storage area");
 	if ((lMasterStackSize + threadStack) > ATOM_SYSTEM_STACK_SIZE)
 	{
+		atom_assert(0, "No more space in system stack storage area");
 		return ATOM_ERR_NO_MEM;
 	}
 
 	if ((ret = atomThreadCreate(&lTCBs[lCurrentTcb], priority, entryPoint, param, (void*)&lMasterStack[lMasterStackSize], threadStack)) != ATOM_OK)
 	{
+		atom_assert(0, "Thread creation falied");
 		return ret;
 	}
 	
