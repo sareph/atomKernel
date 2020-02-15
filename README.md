@@ -1,8 +1,9 @@
 ---------------------------------------------------------------------------
 
- * Library: Atomthreads
- * Author: Kelvin Lawson <info@atomthreads.com>
+ * Library: atomKernel
+ * fork of: Atomthreads
  * Author: Kaworu <kaworu-gat@k2t.eu>
+ * Author: Kelvin Lawson <info@atomthreads.com>
  * License: BSD Revised
 
 ---------------------------------------------------------------------------
