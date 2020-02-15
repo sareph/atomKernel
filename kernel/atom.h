@@ -27,8 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __ATOM_H
-#define __ATOM_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -162,5 +161,3 @@ extern void atomTimerTick (void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ATOM_H */

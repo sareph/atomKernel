@@ -27,9 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __ATOM_EVENT_H
-#define __ATOM_EVENT_H
+#pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define ATOM_NO_WAIT          0
 #define ATOM_WAIT_FOREVER     0xFFFFFFFFUL
@@ -38,22 +40,12 @@
 #define ATOM_OR               0
 #define ATOM_OR_CLEAR         1
 
-
-
 #define ATOM_EVENT_AND_MASK                 0x2
 #define ATOM_EVENT_CLEAR_MASK               0x1
-
-
 
 #define ATOM_NO_EVENTS                    0x07 //located it here temp.. place it in atom.h finnally.
 
 /*ATOM_EVENT_FLAGS_GROUP * _ATOM_event_flags_created_ptr;*/
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /* Define the event flags group structure utilized by the application.  */
 
@@ -64,8 +56,6 @@ typedef struct atom_event
 
 } ATOM_EVENT;
 
-
-
 extern atom_status_t atomEventCreate(ATOM_EVENT *event_ptr, char *name_ptr);
 extern atom_status_t atomEventDelete(ATOM_EVENT *event_ptr);
 extern atom_status_t atomEventGet(ATOM_EVENT *event_ptr, uint32_t requested_flags, uint8_t get_option, uint32_t *actual_flags_ptr, uint32_t timeout);
@@ -74,7 +64,3 @@ extern atom_status_t atomEventSet(ATOM_EVENT *event_ptr, uint32_t flags_to_set, 
 #ifdef __cplusplus
 }
 #endif
-
-
-
-#endif /* __ATOM_EVENT_H */

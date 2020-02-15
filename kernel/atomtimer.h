@@ -27,8 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __ATOM_TIMER_H
-#define __ATOM_TIMER_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,5 +64,3 @@ extern void atomTimeSet (uint32_t new_time);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ATOM_TIMER_H */

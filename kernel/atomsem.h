@@ -27,8 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __ATOM_SEM_H
-#define __ATOM_SEM_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,4 +49,3 @@ extern atom_status_t atomSemResetCount(ATOM_SEM *sem, uint8_t count);
 }
 #endif
 
-#endif /* __ATOM_SEM_H */

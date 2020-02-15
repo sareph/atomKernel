@@ -26,8 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __ATOM_QUEUE_H
-#define __ATOM_QUEUE_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,5 +52,3 @@ extern atom_status_t atomQueuePut(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *ms
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ATOM_QUEUE_H */

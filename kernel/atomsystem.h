@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "atomconfig.h"
 
 #if ATOM_SYSTEM_WRAPPER_ENABLE
@@ -20,4 +24,8 @@ atom_status_t atomOSInit(size_t idleThreadStack, void *idleThreadParam);
 atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAtomThread entryPoint, void *param, ATOM_TCB **pTcb);
 void atomOSStart(void);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

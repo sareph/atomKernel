@@ -26,12 +26,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __ATOM_MUTEX_H
-#define __ATOM_MUTEX_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 typedef struct atom_mutex
 {
@@ -49,4 +49,3 @@ extern atom_status_t atomMutexPut(ATOM_MUTEX *mutex);
 }
 #endif
 
-#endif /* __ATOM_MUTEX_H */
