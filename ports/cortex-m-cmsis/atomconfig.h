@@ -9,5 +9,5 @@
 #define ATOM_SYSTEM_WRAPPER_ENABLE 1
 
 #define ATOM_SYSTEM_MAX_THREADS   8 // needed only if system wrapper is used
-#define ATOM_SYSTEM_STACK_SIZE    (1024 * 16)
-#define ATOM_SYSTEM_STACK_ATTRIBUTE __attribute((section(".ramd1")))
+#define ATOM_SYSTEM_STACK_SIZE    (1024 * 32)
+#define ATOM_SYSTEM_STACK_ATTRIBUTE //__attribute((aligned(4), section(".ramd1")))
