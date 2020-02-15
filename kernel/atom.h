@@ -52,6 +52,8 @@ struct atom_tcb;
 
 typedef atom_status_t (*_fnAtomThread)(void *ptr);
 	
+#define ATOM_INFINITY -1
+	
 typedef struct atom_tcb
 {
     /*

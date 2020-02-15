@@ -280,9 +280,9 @@ atom_status_t atomSemDelete(ATOM_SEM *sem)
  * Depending on the \c timeout value specified the call will do one of
  * the following if the count value is zero:
  *
- * \c timeout == 0 : Call will block until the count is non-zero \n
+ * \c timeout == -1 : Call will block until the count is non-zero \n
  * \c timeout > 0 : Call will block until non-zero up to the specified timeout \n
- * \c timeout == -1 : Return immediately if the count is zero \n
+ * \c timeout == 0 : Return immediately if the count is zero \n
  *
  * If the call needs to block and \c timeout is zero, it will block
  * indefinitely until atomSemPut() or atomSemDelete() is called on the
@@ -333,7 +333,7 @@ atom_status_t atomSemGet(ATOM_SEM *sem, int32_t timeout)
 		if (sem->count == 0)
 		{
 			/* If called with timeout >= 0, we should block */
-			if (timeout >= 0)
+			if (timeout != 0)
 			{
 				/* Count is zero, block the calling thread */
 
@@ -361,7 +361,7 @@ atom_status_t atomSemGet(ATOM_SEM *sem, int32_t timeout)
 						status = ATOM_OK;
 
 						/* Register a timer callback if requested */
-						if (timeout)
+						if (timeout > 0)
 						{
 							/* Fill out the data needed by the callback to wake us up */
 							timer_data.tcb_ptr = curr_tcb_ptr;
@@ -450,7 +450,7 @@ atom_status_t atomSemGet(ATOM_SEM *sem, int32_t timeout)
 			}
 			else
 			{
-				/* timeout == -1, requested not to block and count is zero */
+				/* timeout == 0, requested not to block and count is zero */
 				CRITICAL_END();
 				status = ATOM_WOULDBLOCK;
 			}

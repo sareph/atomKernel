@@ -304,9 +304,9 @@ atom_status_t atomMutexDelete(ATOM_MUTEX *mutex)
  * Depending on the \c timeout value specified the call will do one of
  * the following if the mutex is already locked by another thread:
  *
- * \c timeout == 0 : Call will block until the mutex is available \n
+ * \c timeout == -1 : Call will block until the mutex is available \n
  * \c timeout > 0 : Call will block until available up to the specified timeout \n
- * \c timeout == -1 : Return immediately if mutex is locked by another thread \n
+ * \c timeout == 0 : Return immediately if mutex is locked by another thread \n
 *
  * If the call needs to block and \c timeout is zero, it will block
  * indefinitely until the owning thread calls atomMutexPut() or
@@ -376,7 +376,7 @@ atom_status_t atomMutexGet(ATOM_MUTEX *mutex, int32_t timeout)
 		else if((mutex->owner != NULL) && (mutex->owner != curr_tcb_ptr))
 		{
 			/* If called with timeout >= 0, we should block */
-			if (timeout >= 0)
+			if (timeout != 0)
 			{
 				/* Add current thread to the suspend list on this mutex */
 				if (tcbEnqueuePriority(&mutex->suspQ, curr_tcb_ptr) != ATOM_OK)
@@ -396,7 +396,7 @@ atom_status_t atomMutexGet(ATOM_MUTEX *mutex, int32_t timeout)
 					status = ATOM_OK;
 
 					/* Register a timer callback if requested */
-					if (timeout)
+					if (timeout > 0)
 					{
 						/* Fill out the data needed by the callback to wake us up */
 						timer_data.tcb_ptr = curr_tcb_ptr;
@@ -477,7 +477,7 @@ atom_status_t atomMutexGet(ATOM_MUTEX *mutex, int32_t timeout)
 			}
 			else
 			{
-				/* timeout == -1, requested not to block and mutex is owned by another thread */
+				/* timeout == 0, requested not to block and mutex is owned by another thread */
 				CRITICAL_END();
 				status = ATOM_WOULDBLOCK;
 			}

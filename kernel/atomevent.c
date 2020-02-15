@@ -38,7 +38,7 @@
  *
  * \par Flexible blocking APIs with event
  * Threads which wish to get a event can choose whether to block,
- * block with timeout, or not block if the event timeout value is -1.
+ * block with timeout, or not block if the event timeout value is 0.
  *
  * \par Interrupt-safe calls
  * All APIs can be called from interrupt context. Any calls which could
@@ -157,9 +157,9 @@ atom_status_t atomEventCreate(ATOM_EVENT *event_ptr, char *name_ptr)
   * Depending on the \c timeout value specified the call will do one of
  * the following if the count value is zero:
  *	@param[in] timeout
- * \c timeout == 0 : Call will block until event flag is satisfied or event group is deleted \n
+ * \c timeout == -1 : Call will block until event flag is satisfied or event group is deleted \n
  * \c timeout > 0 : Call will block until non-zero up to the specified timeout \n
- * \c timeout == -1 : Return immediately even the event flags requested which is not satified \n
+ * \c timeout == 0 : Return immediately even the event flags requested which is not satified \n
  **
  * If the call needs to block and \c timeout is non-zero, the call will only
  * block for the specified number of system ticks after which time, if the
@@ -285,7 +285,7 @@ atom_status_t atomEventGet(ATOM_EVENT *event_ptr,
 			printf("%s not meet the reqeust flag go here \n", __func__);
 #endif
 			/* Determine if the request specifies suspension.  it is timeout value ATOM_WAIT_FOREVER*/
-			if (timeout >= 0)
+			if (timeout != 0)
 			{
 				/* Prepare for suspension of this thread.  */
 
@@ -321,7 +321,7 @@ atom_status_t atomEventGet(ATOM_EVENT *event_ptr,
 
 
 						/* Register a timer callback if requested */
-						if (timeout)
+						if (timeout > 0)
 						{
 							/* Fill out the data needed by the callback to wake us up */
 							timer_data.tcb_ptr = curr_tcb_ptr;
@@ -408,7 +408,7 @@ atom_status_t atomEventGet(ATOM_EVENT *event_ptr,
 
 			else
 			{
-				/* timeout == -1, requested not to block and count is zero */
+				/* timeout == 0, requested not to block and count is zero */
 				CRITICAL_END();
 				status = ATOM_WOULDBLOCK;
 			}

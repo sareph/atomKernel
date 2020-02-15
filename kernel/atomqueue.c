@@ -309,9 +309,9 @@ atom_status_t atomQueueDelete(ATOM_QUEUE *qptr)
  * If the queue is currently empty, the call will do one of the following
  * depending on the \c timeout value specified:
  *
- * \c timeout == 0 : Call will block until a message is available \n
+ * \c timeout == -1 : Call will block until a message is available \n
  * \c timeout > 0 : Call will block until a message or the specified timeout \n
- * \c timeout == -1 : Return immediately if no message is on the queue \n
+ * \c timeout == 0 : Return immediately if no message is on the queue \n
  *
  * If a maximum timeout value is specified (\c timeout > 0), and no message
  * is present on the queue for the specified number of system ticks, the
@@ -355,8 +355,8 @@ atom_status_t atomQueueGet(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
 		/* If no messages on the queue, block the calling thread */
 		if (qptr->num_msgs_stored == 0)
 		{
-			/* If called with timeout >= 0, we should block */
-			if (timeout >= 0)
+			/* If called with timeout != 0, we should block */
+			if (timeout != 0)
 			{
 				/* Queue is empty, block the calling thread */
 
@@ -376,7 +376,7 @@ atom_status_t atomQueueGet(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
 						status = ATOM_OK;
 
 						/* Register a timer callback if requested */
-						if (timeout)
+						if (timeout > 0)
 						{
 							/**
 							 * Fill out the data needed by the callback to
@@ -475,7 +475,7 @@ atom_status_t atomQueueGet(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
 			}
 			else
 			{
-				/* timeout == -1, requested not to block and queue is empty */
+				/* timeout == 0, requested not to block and queue is empty */
 				CRITICAL_END();
 				status = ATOM_WOULDBLOCK;
 			}
@@ -514,9 +514,9 @@ atom_status_t atomQueueGet(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
  * If the queue is currently full, the call will do one of the following
  * depending on the \c timeout value specified:
  *
- * \c timeout == 0 : Call will block until space is available \n
+ * \c timeout == -1 : Call will block until space is available \n
  * \c timeout > 0 : Call will block until space or the specified timeout \n
- * \c timeout == -1 : Return immediately if the queue is full \n
+ * \c timeout == 0 : Return immediately if the queue is full \n
  *
  * If a maximum timeout value is specified (\c timeout > 0), and no space
  * is available on the queue for the specified number of system ticks, the
@@ -561,8 +561,8 @@ atom_status_t atomQueuePut(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
 		/* If queue is full, block the calling thread */
 		if (qptr->num_msgs_stored == qptr->max_num_msgs)
 		{
-			/* If called with timeout >= 0, we should block */
-			if (timeout >= 0)
+			/* If called with timeout != 0, we should block */
+			if (timeout != 0)
 			{
 				/* Queue is full, block the calling thread */
 
@@ -582,7 +582,7 @@ atom_status_t atomQueuePut(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
 						status = ATOM_OK;
 
 						/* Register a timer callback if requested */
-						if (timeout)
+						if (timeout > 0)
 						{
 							/**
 							 * Fill out the data needed by the callback to
@@ -683,7 +683,7 @@ atom_status_t atomQueuePut(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
 			}
 			else
 			{
-				/* timeout == -1, cannot block. Just return queue is full */
+				/* timeout == 0, cannot block. Just return queue is full */
 				CRITICAL_END();
 				status = ATOM_WOULDBLOCK;
 			}
