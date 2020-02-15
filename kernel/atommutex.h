@@ -32,9 +32,11 @@
 extern "C" {
 #endif
 
+#include "atomsync.h"
 
 typedef struct atom_mutex
-{
+{	
+	ATOM_SYNC_OBJECT aso;
     ATOM_TCB *  suspQ;  /* Queue of threads suspended on this mutex */
     ATOM_TCB *  owner;  /* Thread which currently owns the lock */
     uint8_t     count;  /* Recursive count of locks by the owner  */

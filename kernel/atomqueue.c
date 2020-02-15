@@ -172,6 +172,7 @@ atom_status_t atomQueueCreate(ATOM_QUEUE *qptr, uint8_t *buff_ptr, uint32_t unit
 		qptr->insert_index = 0;
 		qptr->remove_index = 0;
 		qptr->num_msgs_stored = 0;
+		qptr->aso.type = ATOM_SYNC_TYPE_QUEUE;
 
 		/* Successful */
 		status = ATOM_OK;

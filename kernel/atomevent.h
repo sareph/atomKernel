@@ -49,8 +49,11 @@ extern "C" {
 
 /* Define the event flags group structure utilized by the application.  */
 
+#include <atomsync.h>
+	
 typedef struct atom_event
 {
+	ATOM_SYNC_OBJECT aso;
 	uint32_t	atom_event_current;
     ATOM_TCB *  suspQ;  /* Queue of threads suspended on this event */
 

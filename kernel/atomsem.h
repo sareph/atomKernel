@@ -33,8 +33,11 @@
 extern "C" {
 #endif
 
+#include <atomsync.h>
+	
 typedef struct atom_sem
 {
+	ATOM_SYNC_OBJECT aso;
     ATOM_TCB *  suspQ;  /* Queue of threads suspended on this semaphore */
     uint8_t     count;  /* Semaphore count */
 } ATOM_SEM;

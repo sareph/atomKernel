@@ -143,6 +143,8 @@ atom_status_t atomSemCreate(ATOM_SEM *sem, uint8_t initial_count)
 		/* Initialise the suspended threads queue */
 		sem->suspQ = NULL;
 
+		sem->aso.type = ATOM_SYNC_TYPE_SEM;
+		
 		/* Successful */
 		status = ATOM_OK;
 	}

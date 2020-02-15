@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Kelvin Lawson. All rights reserved.
+ * Copyright (c) 2020, Tomek Nagisa. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,33 +26,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "atomsync.h"
+#include "atom.h"
 
-#include <atomsync.h>
-	
-typedef struct atom_queue
+atom_status_t atomLock(ATOM_SYNC_OBJECT *pSo, int_fast8_t tineout)
 {
-	ATOM_SYNC_OBJECT aso;
-	
-    ATOM_TCB *  putSuspQ;       /* Queue of threads waiting to send */
-    ATOM_TCB *  getSuspQ;       /* Queue of threads waiting to receive */
-    uint8_t *   buff_ptr;       /* Pointer to queue data area */
-    uint32_t    unit_size;      /* Size of each message */
-    uint32_t    max_num_msgs;   /* Max number of storable messages */
-    uint32_t    insert_index;   /* Next byte index to insert into */
-    uint32_t    remove_index;   /* Next byte index to remove from */
-    uint32_t    num_msgs_stored;/* Number of messages stored */
-} ATOM_QUEUE;
-
-extern atom_status_t atomQueueCreate(ATOM_QUEUE *qptr, uint8_t *buff_ptr, uint32_t unit_size, uint32_t max_num_msgs);
-extern atom_status_t atomQueueDelete(ATOM_QUEUE *qptr);
-extern atom_status_t atomQueueGet(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr);
-extern atom_status_t atomQueuePut(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr);
-
-#ifdef __cplusplus
+	return ATOM_ERROR;
 }
-#endif
+
+atom_status_t atomUnlock(ATOM_SYNC_OBJECT *pSo, int_fast8_t timeout)
+{
+	return ATOM_ERROR;
+}

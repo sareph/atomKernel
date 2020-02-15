@@ -147,7 +147,6 @@ atom_status_t atomMutexCreate(ATOM_MUTEX *mutex)
 	/* Parameter check */
 	if (mutex == NULL)
 	{
-		/* Bad mutex pointer */
 		status = ATOM_ERR_PARAM;
 	}
 	else
@@ -155,11 +154,9 @@ atom_status_t atomMutexCreate(ATOM_MUTEX *mutex)
 		/* Start with no owner (unlocked) */
 		mutex->owner = NULL;
 
-		/* Reset the initial lock count */
 		mutex->count = 0;
-
-		/* Initialise the suspended threads queue */
 		mutex->suspQ = NULL;
+		mutex->aso.type = ATOM_SYNC_TYPE_MUTEX;
 
 		/* Successful */
 		status = ATOM_OK;

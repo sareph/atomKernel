@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Kelvin Lawson. All rights reserved.
+ * Copyright (c) 2020, Tomek Nagisa. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,30 +29,28 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-#include <atomsync.h>
-	
-typedef struct atom_queue
-{
-	ATOM_SYNC_OBJECT aso;
-	
-    ATOM_TCB *  putSuspQ;       /* Queue of threads waiting to send */
-    ATOM_TCB *  getSuspQ;       /* Queue of threads waiting to receive */
-    uint8_t *   buff_ptr;       /* Pointer to queue data area */
-    uint32_t    unit_size;      /* Size of each message */
-    uint32_t    max_num_msgs;   /* Max number of storable messages */
-    uint32_t    insert_index;   /* Next byte index to insert into */
-    uint32_t    remove_index;   /* Next byte index to remove from */
-    uint32_t    num_msgs_stored;/* Number of messages stored */
-} ATOM_QUEUE;
+#include <stdint.h>
+#include <atomdefs.h>
 
-extern atom_status_t atomQueueCreate(ATOM_QUEUE *qptr, uint8_t *buff_ptr, uint32_t unit_size, uint32_t max_num_msgs);
-extern atom_status_t atomQueueDelete(ATOM_QUEUE *qptr);
-extern atom_status_t atomQueueGet(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr);
-extern atom_status_t atomQueuePut(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr);
+#define ATOM_SYNC_TYPE_INVALID 0x0000
+#define ATOM_SYNC_TYPE_SEM 0x0001
+#define ATOM_SYNC_TYPE_MUTEX 0x0002
+#define ATOM_SYNC_TYPE_QUEUE 0x0003
+#define ATOM_SYNC_TYPE_EVENT 0x0004
+	
+typedef struct atom_sycn_object
+{
+	uint_fast8_t type; 
+} ATOM_SYNC_OBJECT;
+
+extern atom_status_t atomLock(ATOM_SYNC_OBJECT *pSo, int_fast8_t tineout);
+extern atom_status_t atomUnlock(ATOM_SYNC_OBJECT *pSo, int_fast8_t timeout);
 
 #ifdef __cplusplus
 }
 #endif
+
