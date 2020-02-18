@@ -103,6 +103,11 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
 		return ATOM_ERR_NO_MEM;
 	}
 
+	if (threadStack == 0)
+	{
+		threadStack = 1024;
+	}
+	
 	if ((ret = atomThreadCreate(&lTCBs[lCurrentTcb], priority, entryPoint, param, (void*)&lMasterStack[lMasterStackSize], threadStack)) != ATOM_OK)
 	{
 		atom_assert(0, "Thread creation falied");
@@ -128,7 +133,6 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
  *
  * @return None
  */
-
 
 void atomOSStart(void)
 {
