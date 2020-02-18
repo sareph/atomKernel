@@ -242,7 +242,7 @@ int atomGetIdleTime()
  * @return None
  */
 
-void atomSched(uint8_t timer_tick)
+void atomSched(uint_fast8_t timer_tick)
 {
 	CRITICAL_STORE;
 	ATOM_TCB *new_tcb = NULL;
@@ -438,7 +438,7 @@ atom_status_t atomThreadDestroy(ATOM_TCB *tcb_ptr, int *ret_value)
  * @retval ATOM_ERR_PARAM Bad parameters
  * @retval ATOM_ERR_QUEUE Error putting the thread on the ready queue
  */
-atom_status_t atomThreadCreate(ATOM_TCB *tcb_ptr, atom_prio_t priority, _fnAtomThread entry_point, void* entry_param, void *stack_bottom, uint32_t stack_size)
+atom_status_t atomThreadCreate(ATOM_TCB *tcb_ptr, atom_prio_t priority, _fnAtomThread entry_point, void* entry_param, void *stack_bottom, const uint32_t stack_size)
 {
 	CRITICAL_STORE;
 	atom_status_t status;
@@ -667,7 +667,7 @@ void atomIntEnter(void)
  *
  * @return None
  */
-void atomIntExit(uint8_t timer_tick)
+void atomIntExit(uint_fast8_t timer_tick)
 {
 	/* Decrement the interrupt count */
 	atomIntCnt--;

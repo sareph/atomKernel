@@ -44,8 +44,8 @@ typedef struct atom_mutex
 
 extern atom_status_t atomMutexCreate(ATOM_MUTEX *mutex);
 extern atom_status_t atomMutexDelete(ATOM_MUTEX *mutex);
-extern atom_status_t atomMutexGet(ATOM_MUTEX *mutex, int32_t timeout);
-extern atom_status_t atomMutexPut(ATOM_MUTEX *mutex);
+extern atom_status_t atomMutexLock(ATOM_MUTEX *mutex, int32_t timeout);
+extern atom_status_t atomMutexUnlock(ATOM_MUTEX *mutex);
 
 #ifdef __cplusplus
 }

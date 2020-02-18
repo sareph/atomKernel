@@ -126,7 +126,7 @@ static void atomSemTimerCallback(POINTER cb_data);
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameters
  */
-atom_status_t atomSemCreate(ATOM_SEM *sem, uint8_t initial_count)
+atom_status_t atomSemCreate(ATOM_SEM *sem, uint_fast8_t initial_count)
 {
 	atom_status_t status;
 
@@ -607,7 +607,7 @@ atom_status_t atomSemPut(ATOM_SEM * sem)
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameter
  */
-atom_status_t atomSemResetCount(ATOM_SEM *sem, uint8_t count)
+atom_status_t atomSemResetCount(ATOM_SEM *sem, uint_fast8_t count)
 {
 	atom_status_t status;
 

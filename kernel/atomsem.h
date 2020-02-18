@@ -42,11 +42,11 @@ typedef struct atom_sem
     uint8_t     count;  /* Semaphore count */
 } ATOM_SEM;
 
-extern atom_status_t atomSemCreate(ATOM_SEM *sem, uint8_t initial_count);
+extern atom_status_t atomSemCreate(ATOM_SEM *sem, uint_fast8_t initial_count);
 extern atom_status_t atomSemDelete(ATOM_SEM *sem);
 extern atom_status_t atomSemGet(ATOM_SEM *sem, int32_t timeout);
 extern atom_status_t atomSemPut(ATOM_SEM *sem);
-extern atom_status_t atomSemResetCount(ATOM_SEM *sem, uint8_t count);
+extern atom_status_t atomSemResetCount(ATOM_SEM *sem, uint_fast8_t count);
 
 #ifdef __cplusplus
 }

@@ -50,8 +50,8 @@ typedef struct atom_queue
 
 extern atom_status_t atomQueueCreate(ATOM_QUEUE *qptr, uint8_t *buff_ptr, uint32_t unit_size, uint32_t max_num_msgs);
 extern atom_status_t atomQueueDelete(ATOM_QUEUE *qptr);
-extern atom_status_t atomQueueGet(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr);
-extern atom_status_t atomQueuePut(ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr);
+extern atom_status_t atomQueueGet(ATOM_QUEUE *qptr, int32_t timeout, void *msgptr);
+extern atom_status_t atomQueuePut(ATOM_QUEUE *qptr, int32_t timeout, const void *msgptr);
 
 #ifdef __cplusplus
 }

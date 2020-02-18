@@ -283,7 +283,7 @@ atom_status_t atomMutexDelete(ATOM_MUTEX *mutex)
 
 
 /**
- * \b atomMutexGet
+ * \b atomMutexLock
  *
  * Take the lock on a mutex.
  *
@@ -334,7 +334,7 @@ atom_status_t atomMutexDelete(ATOM_MUTEX *mutex)
  * @retval ATOM_ERR_TIMER Problem registering the timeout
  * @retval ATOM_ERR_OVF The recursive lock count would have overflowed (>255)
  */
-atom_status_t atomMutexGet(ATOM_MUTEX *mutex, int32_t timeout)
+atom_status_t atomMutexLock(ATOM_MUTEX *mutex, int32_t timeout)
 {
 	CRITICAL_STORE;
 	atom_status_t status;
@@ -515,7 +515,7 @@ atom_status_t atomMutexGet(ATOM_MUTEX *mutex, int32_t timeout)
 
 
 /**
- * \b atomMutexPut
+ * \b atomMutexUnlock
  *
  * Give back the lock on a mutex.
  *
@@ -540,7 +540,7 @@ atom_status_t atomMutexGet(ATOM_MUTEX *mutex, int32_t timeout)
  * @retval ATOM_ERR_TIMER Problem cancelling a timeout for a woken thread
  * @retval ATOM_ERR_OWNERSHIP Attempt to unlock mutex not owned by this thread
  */
-atom_status_t atomMutexPut(ATOM_MUTEX * mutex)
+atom_status_t atomMutexUnlock(ATOM_MUTEX * mutex)
 {
 	atom_status_t status;
 	CRITICAL_STORE;
