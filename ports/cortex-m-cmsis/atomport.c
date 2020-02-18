@@ -241,6 +241,9 @@ void __attribute__((noinline)) archContextSwitch(ATOM_TCB *old_tcb_ptr __maybe_u
 #endif
 		__DSB();
 
+		atom_assert(new_tcb_ptr, "new_tcb_ptr == null");
+		atom_assert(old_tcb_ptr, "old_tcb_ptr == null");
+		
 		SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
 	}
 }
@@ -458,6 +461,8 @@ static void thread_shell(void)
 		task_ptr->return_value = task_ptr->entry_point(task_ptr->entry_param);
 	}
 
+	debugLogEx(DCOL_YELLOW, "Thread %08x exited with code: %d\r\n", task_ptr, task_ptr->return_value);
+	
 	/**
 	 * If thread returned, store it's rv in TCB and mark asa termminated
 	 * so it wont be scheduled again
