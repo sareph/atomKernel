@@ -143,7 +143,7 @@ static void atomQueueTimerCallback(POINTER cb_data);
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameters
  */
-atom_status_t atomQueueCreate(ATOM_QUEUE *qptr, uint8_t *buff_ptr, const uint32_t unit_size, const uint32_t max_num_msgs)
+atom_status_t atomQueueCreate(ATOM_QUEUE *qptr, uint8_t *buff_ptr, int32_t unit_size, int32_t max_num_msgs)
 {
 	atom_status_t status;
 
@@ -324,12 +324,12 @@ atom_status_t atomQueueDelete(ATOM_QUEUE *qptr)
  * parameter is -1 (in which case it does not block).
  *
  * @param[in] qptr Pointer to queue object
- * @param[in] timeout Max system ticks to block (0 = forever, -1 =  no block)
+ * @param[in] timeout Max system ticks to block (-1 = forever, 0 = no wait)
  * @param[out] msgptr Pointer to which the received message will be copied
  *
  * @retval ATOM_OK Success
  * @retval ATOM_TIMEOUT Queue wait timed out before being woken
- * @retval ATOM_WOULDBLOCK Called with timeout == -1 but queue was empty
+ * @retval ATOM_WOULDBLOCK Called with timeout == 0 but queue was empty
  * @retval ATOM_ERR_DELETED Queue was deleted while suspended
  * @retval ATOM_ERR_CONTEXT Not called in thread context and attempted to block
  * @retval ATOM_ERR_PARAM Bad parameter
@@ -792,6 +792,14 @@ static atom_status_t queue_remove(ATOM_QUEUE *qptr, void* msgptr)
 	atom_status_t status;
 	ATOM_TCB *tcb_ptr;
 
+	//atom_assert(qptr->num_msgs_stored > 0, "qptr->num_msgs_stored > 0");
+	
+	/* Check if there is anything to remove */
+	if (qptr->num_msgs_stored == 0)
+	{
+		return ATOM_ERR_NOT_FOUND;
+	}
+	
 	/* Check parameters */
 	if ((qptr == NULL) || (msgptr == NULL))
 	{
@@ -805,6 +813,8 @@ static atom_status_t queue_remove(ATOM_QUEUE *qptr, void* msgptr)
 		qptr->remove_index += qptr->unit_size;
 		qptr->num_msgs_stored--;
 
+		atom_assert(qptr->num_msgs_stored >= 0, "qptr->num_msgs_stored >= 0");
+		
 		/* Check if the remove index should now wrap to the beginning */
 		if (qptr->remove_index >= (qptr->unit_size * qptr->max_num_msgs))
 			qptr->remove_index = 0;
