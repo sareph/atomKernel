@@ -199,6 +199,13 @@ static int lContextSwitchIdle;
 /* Forward declarations */
 static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb);
 
+#if ATOM_STACK_CHECKING
+ATOM_TCB *atomGetIdleTcb()
+{
+	return &idle_tcb;
+}
+#endif
+
 #if ATOM_IDLE_TIME_CALCULATION
 /**
  * \b atomGetIdleTime
@@ -208,11 +215,6 @@ static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb);
  *
  * @return mili percetage of context switches to idle thread
  */
-
-ATOM_TCB *atomGetIdleTcb()
-{
-	return &idle_tcb;
-}
 
 int atomGetIdleTime()
 {

@@ -153,7 +153,6 @@ void atomOSStart(void)
 }
 
 #if ATOM_STACK_CHECKING
-
 void atomOSCheckStack()
 {
 	uint32_t ub, fb;
