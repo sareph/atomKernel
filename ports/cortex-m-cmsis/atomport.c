@@ -73,7 +73,7 @@ void __malloc_unlock(struct _reent *reent)
 }
 #endif
 
-static void thread_shell(void);
+static void threadShell(void);
 
 struct task_switch_info ctx_switch_info =
 {
@@ -420,8 +420,6 @@ void __attribute__((naked)) PendSV_Handler()
 		);
 	}
 	
-	__ISB();
-	__DMB();
 	__DSB();
 	
 	__asm volatile
@@ -434,7 +432,6 @@ void __attribute__((naked)) PendSV_Handler()
     
     /* Return to new thread */
 			"bx      lr								\n"
-			".ltorg									\n"
 	);
 }
 
@@ -442,7 +439,7 @@ void __attribute__((naked)) PendSV_Handler()
  * This function is called when a new thread is scheduled in for the first
  * time. It will simply call the threads entry point function.
  */
-static void thread_shell(void)
+static void threadShell(void)
 {
 	ATOM_TCB *task_ptr;
 
@@ -529,7 +526,7 @@ void archThreadContextInit(ATOM_TCB *tcb_ptr,
 	 * flag set and nothing else)
 	 */
 	isr_ctx->psr = 0x01000000;
-	isr_ctx->pc  = (uint32_t) thread_shell;
+	isr_ctx->pc  = (uint32_t) threadShell;
 
 	/* initialise unused registers to silly value */
 	isr_ctx->lr  = 0xEEEEEEEE;
