@@ -156,7 +156,7 @@ atom_status_t atomMutexCreate(ATOM_MUTEX *mutex)
 		mutex->owner = NULL;
 
 		mutex->count = 0;
-		mutex->suspQ = NULL;
+		mutex->aso.suspQ = NULL;
 		mutex->aso.type = ATOM_SYNC_TYPE_MUTEX;
 
 		/* Successful */
@@ -212,7 +212,7 @@ atom_status_t atomMutexDelete(ATOM_MUTEX *mutex)
 			CRITICAL_START();
 
 			/* Check if any threads are suspended */
-			tcb_ptr = tcbDequeueHead(&mutex->suspQ);
+			tcb_ptr = tcbDequeueHead(&mutex->aso.suspQ);
 
 			/* A thread is suspended on the mutex */
 			if (tcb_ptr)
@@ -377,7 +377,7 @@ atom_status_t atomMutexLock(ATOM_MUTEX *mutex, int32_t timeout)
 			if (timeout != 0)
 			{
 				/* Add current thread to the suspend list on this mutex */
-				if (tcbEnqueuePriority(&mutex->suspQ, curr_tcb_ptr) != ATOM_OK)
+				if (tcbEnqueuePriority(&mutex->aso.suspQ, curr_tcb_ptr) != ATOM_OK)
 				{
 					/* Exit critical region */
 					CRITICAL_END();
@@ -419,7 +419,7 @@ atom_status_t atomMutexLock(ATOM_MUTEX *mutex, int32_t timeout)
 							status = ATOM_ERR_TIMER;
 
 							/* Clean up and return to the caller */
-							(void)tcbDequeueEntry(&mutex->suspQ, curr_tcb_ptr);
+							(void)tcbDequeueEntry(&mutex->aso.suspQ, curr_tcb_ptr);
 							curr_tcb_ptr->suspended = FALSE;
 							curr_tcb_ptr->suspend_timo_cb = NULL;
 						}
@@ -581,14 +581,14 @@ atom_status_t atomMutexUnlock(ATOM_MUTEX * mutex)
 				mutex->owner = NULL;
 
 				/* If any threads are blocking on this mutex, wake them now */
-				if (mutex->suspQ)
+				if (mutex->aso.suspQ)
 				{
 					/**
 					 * Threads are woken up in priority order, with a FIFO system
 					 * used on same priority threads. We always take the head,
 					 * ordering is taken care of by an ordered list enqueue.
 					 */
-					tcb_ptr = tcbDequeueHead(&mutex->suspQ);
+					tcb_ptr = tcbDequeueHead(&mutex->aso.suspQ);
 					if (tcbEnqueuePriority(&tcbReadyQ, tcb_ptr) != ATOM_OK)
 					{
 						/* Exit critical region */
@@ -699,7 +699,7 @@ static void atomMutexTimerCallback(POINTER cb_data)
 		timer_data_ptr->tcb_ptr->suspend_timo_cb = NULL;
 
 		/* Remove this thread from the mutex's suspend list */
-		(void)tcbDequeueEntry(&timer_data_ptr->mutex_ptr->suspQ, timer_data_ptr->tcb_ptr);
+		(void)tcbDequeueEntry(&timer_data_ptr->mutex_ptr->aso.suspQ, timer_data_ptr->tcb_ptr);
 
 		/* Put the thread on the ready queue */
 		(void)tcbEnqueuePriority(&tcbReadyQ, timer_data_ptr->tcb_ptr);

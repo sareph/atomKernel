@@ -35,6 +35,7 @@ extern "C"
 
 #include <stdint.h>
 #include <atomdefs.h>
+#include "atom.h"
 
 #define ATOM_SYNC_TYPE_INVALID 0x0000
 #define ATOM_SYNC_TYPE_SEM 0x0001
@@ -44,7 +45,12 @@ extern "C"
 	
 typedef struct atom_sycn_object
 {
-	uint_fast8_t type; 
+	uint_fast8_t type;
+	union
+	{
+		ATOM_TCB *  suspQ; /* Queue of threads suspended on this object */
+		ATOM_TCB *  putSuspQ; /* Queue of threads waiting to send */
+	};
 } ATOM_SYNC_OBJECT;
 
 extern atom_status_t atomLock(ATOM_SYNC_OBJECT *pSo, int_fast8_t tineout);

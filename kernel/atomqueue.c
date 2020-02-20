@@ -166,7 +166,7 @@ atom_status_t atomQueueCreate(ATOM_QUEUE *qptr, uint8_t *buff_ptr, int32_t unit_
 		qptr->max_num_msgs = max_num_msgs;
 
 		/* Initialise the suspended threads queues */
-		qptr->putSuspQ = NULL;
+		qptr->aso.putSuspQ = NULL;
 		qptr->getSuspQ = NULL;
 
 		/* Initialise the insert/remove pointers */
@@ -230,7 +230,7 @@ atom_status_t atomQueueDelete(ATOM_QUEUE *qptr)
 
 			/* Check if any threads are suspended */
 			if (((tcb_ptr = tcbDequeueHead(&qptr->getSuspQ)) != NULL)
-			    || ((tcb_ptr = tcbDequeueHead(&qptr->putSuspQ)) != NULL))
+			    || ((tcb_ptr = tcbDequeueHead(&qptr->aso.putSuspQ)) != NULL))
 			{
 				/* A thread is waiting on a suspend queue */
 
@@ -576,7 +576,7 @@ atom_status_t atomQueuePut(ATOM_QUEUE *qptr, const int32_t timeout, const void *
 				if (curr_tcb_ptr)
 				{
 					/* Add current thread to the suspend list on sends */
-					if (tcbEnqueuePriority(&qptr->putSuspQ, curr_tcb_ptr) == ATOM_OK)
+					if (tcbEnqueuePriority(&qptr->aso.putSuspQ, curr_tcb_ptr) == ATOM_OK)
 					{
 						/* Set suspended status for the current thread */
 						curr_tcb_ptr->suspended = TRUE;
@@ -593,7 +593,7 @@ atom_status_t atomQueuePut(ATOM_QUEUE *qptr, const int32_t timeout, const void *
 							 */
 							timer_data.tcb_ptr = curr_tcb_ptr;
 							timer_data.queue_ptr = qptr;
-							timer_data.suspQ = &qptr->putSuspQ;
+							timer_data.suspQ = &qptr->aso.putSuspQ;
 
 
 							/* Fill out the timer callback request structure */
@@ -616,7 +616,7 @@ atom_status_t atomQueuePut(ATOM_QUEUE *qptr, const int32_t timeout, const void *
 								status = ATOM_ERR_TIMER;
 
 								/* Clean up and return to the caller */
-								(void)tcbDequeueEntry(&qptr->putSuspQ, curr_tcb_ptr);
+								(void)tcbDequeueEntry(&qptr->aso.putSuspQ, curr_tcb_ptr);
 								curr_tcb_ptr->suspended = FALSE;
 								curr_tcb_ptr->suspend_timo_cb = NULL;
 							}
@@ -824,7 +824,7 @@ static atom_status_t queue_remove(ATOM_QUEUE *qptr, void* msgptr)
 		 * threads are woken up in priority order, with same-priority
 		 * threads woken up in FIFO order.
 		 */
-		tcb_ptr = tcbDequeueHead(&qptr->putSuspQ);
+		tcb_ptr = tcbDequeueHead(&qptr->aso.putSuspQ);
 		if (tcb_ptr)
 		{
 			/* Move the waiting thread to the ready queue */

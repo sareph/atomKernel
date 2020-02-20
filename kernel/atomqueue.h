@@ -38,7 +38,6 @@ typedef struct atom_queue
 {
 	ATOM_SYNC_OBJECT aso;
 	
-    ATOM_TCB *  putSuspQ;       /* Queue of threads waiting to send */
     ATOM_TCB *  getSuspQ;       /* Queue of threads waiting to receive */
     uint8_t *   buff_ptr;       /* Pointer to queue data area */
     int32_t    unit_size;      /* Size of each message */

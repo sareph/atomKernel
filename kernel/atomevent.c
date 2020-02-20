@@ -135,7 +135,7 @@ atom_status_t atomEventCreate(ATOM_EVENT *event_ptr, char *name_ptr)
 	{
 
 		/* Initialize the suspended threads queue */
-		event_ptr->suspQ = NULL;
+		event_ptr->aso.suspQ = NULL;
 
 		event_ptr->atom_event_current = 0;
 
@@ -296,7 +296,7 @@ atom_status_t atomEventGet(ATOM_EVENT *event_ptr,
 				if (curr_tcb_ptr)
 				{
 					/* Add current thread to the suspend list on this event */
-					if (tcbEnqueuePriority(&event_ptr->suspQ, curr_tcb_ptr) != ATOM_OK)
+					if (tcbEnqueuePriority(&event_ptr->aso.suspQ, curr_tcb_ptr) != ATOM_OK)
 					{
 						/* Exit critical region */
 						CRITICAL_END();
@@ -347,7 +347,7 @@ atom_status_t atomEventGet(ATOM_EVENT *event_ptr,
 								status = ATOM_ERR_TIMER;
 
 								/* Clean up and return to the caller */
-								(void)tcbDequeueEntry(&event_ptr->suspQ, curr_tcb_ptr);
+								(void)tcbDequeueEntry(&event_ptr->aso.suspQ, curr_tcb_ptr);
 								curr_tcb_ptr->suspended = FALSE;
 								curr_tcb_ptr->suspend_timo_cb = NULL;
 							}
@@ -464,7 +464,7 @@ static void atomEventTimerCallback(POINTER cb_data)
 		timer_data_ptr->tcb_ptr->suspend_timo_cb = NULL;
 
 		/* Remove this thread from the event suspend list */
-		(void)tcbDequeueEntry(&timer_data_ptr->event_ptr->suspQ, timer_data_ptr->tcb_ptr);
+		(void)tcbDequeueEntry(&timer_data_ptr->event_ptr->aso.suspQ, timer_data_ptr->tcb_ptr);
 
 		/* Put the thread on the ready queue */
 		(void)tcbEnqueuePriority(&tcbReadyQ, timer_data_ptr->tcb_ptr);
@@ -585,13 +585,13 @@ atom_status_t atomEventSet(ATOM_EVENT *event_ptr, uint32_t flags_to_set, uint8_t
 #endif
 
 		/* If any threads are blocking on the event, wake up one */
-		if (event_ptr->suspQ)
+		if (event_ptr->aso.suspQ)
 		{
 #ifdef DEBUG_EVENT
 			printf("tcbDequeueHead to pull out queue.\n");
 #endif
 
-			tcb_ptr = tcbDequeueHead(&event_ptr->suspQ);
+			tcb_ptr = tcbDequeueHead(&event_ptr->aso.suspQ);
 			////////////////////////////////////////////////////////
 			/* copy from thread event get.***********/
 			/* Determine if this thread's get event flag request has been met.  */
@@ -713,7 +713,7 @@ atom_status_t atomEventSet(ATOM_EVENT *event_ptr, uint32_t flags_to_set, uint8_t
 #endif
 				if (tcb_ptr)
 				{
-					if (tcbEnqueuePriority(&event_ptr->suspQ, tcb_ptr) != ATOM_OK)
+					if (tcbEnqueuePriority(&event_ptr->aso.suspQ, tcb_ptr) != ATOM_OK)
 					{
 
 						/* There was a problem putting the thread on the ready queue */
@@ -779,7 +779,7 @@ atom_status_t atomEventDelete(ATOM_EVENT *event_ptr)
 			CRITICAL_START();
 
 			/* Check if any threads are suspended */
-			tcb_ptr = tcbDequeueHead(&event_ptr->suspQ);
+			tcb_ptr = tcbDequeueHead(&event_ptr->aso.suspQ);
 
 			/* A thread is suspended on the event group */
 			if (tcb_ptr)
