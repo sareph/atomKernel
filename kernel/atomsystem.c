@@ -33,13 +33,19 @@
 #include "atom.h"
 #include "atomdefs.h"
 #include "atomsystem.h"
+#include <sys/debug.h>
 
 #if ATOM_SYSTEM_WRAPPER_ENABLE
 
-static size_t lMasterStackSize;
-static uint8_t lMasterStack[ATOM_SYSTEM_STACK_SIZE] ATOM_SYSTEM_STACK_ATTRIBUTE;
-static ATOM_TCB lTCBs[ATOM_SYSTEM_MAX_THREADS] ATOM_SYSTEM_STACK_ATTRIBUTE;
+#if ATOM_STACK_CHECKING
+#include <string.h>
+static ATOM_TCB *lTcbPos[16];
 static size_t lCurrentTcb;
+extern ATOM_TCB *atomGetIdleTcb();
+#endif
+
+static size_t lKernelMemPos;
+static uint8_t lKernelMem[ATOM_SYSTEM_MEM_SIZE] ATOM_SYSTEM_MEM_ATTRIBUTE;
 
 /**
  * \b atomOSInit
@@ -62,16 +68,20 @@ atom_status_t atomOSInit(size_t idleThreadStack, void *idleThreadParam)
 		return ret;
 	}
 	
-	lMasterStackSize = 0;
+	lKernelMemPos = 0;
 	lCurrentTcb = 0;
 	
-	if ((ret = atomKernelInit((void*)&lMasterStack[lMasterStackSize], idleThreadStack, idleThreadParam)) != ATOM_OK)
+#if ATOM_STACK_CHECKING
+	memset(&lTcbPos[0], 0, sizeof(ATOM_TCB) * 16);
+#endif
+	
+	if((ret = atomKernelInit((void*)&lKernelMem[lKernelMemPos], idleThreadStack, idleThreadParam)) != ATOM_OK)
 	{
 		atom_assert(0, "Kernel init falied");
 		return ret;
 	}
 	
-	lMasterStackSize += idleThreadStack;
+	lKernelMemPos += idleThreadStack;
 	return ret;
 }
 
@@ -97,9 +107,9 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
 {
 	atom_status_t ret;
 	
-	if ((lMasterStackSize + threadStack) > ATOM_SYSTEM_STACK_SIZE)
+	if ((lKernelMemPos + threadStack + sizeof(ATOM_TCB)) > ATOM_SYSTEM_MEM_SIZE)
 	{
-		atom_assert(0, "No more space in system stack storage area");
+		atom_assert(0, "No more space in system memory storage area");
 		return ATOM_ERR_NO_MEM;
 	}
 
@@ -108,21 +118,24 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
 		threadStack = 1024;
 	}
 	
-	if ((ret = atomThreadCreate(&lTCBs[lCurrentTcb], priority, entryPoint, param, (void*)&lMasterStack[lMasterStackSize], threadStack)) != ATOM_OK)
+	if ((ret = atomThreadCreate((ATOM_TCB*)&lKernelMem[lKernelMemPos], priority, entryPoint, param, (void*)&lKernelMem[lKernelMemPos + sizeof(ATOM_TCB)], threadStack)) != ATOM_OK)
 	{
 		atom_assert(0, "Thread creation falied");
 		return ret;
 	}
 	
-	ret = lCurrentTcb;
-	lMasterStackSize += threadStack;
+	ret = lKernelMemPos;
 	
 	if (pTcb)
 	{
-		*pTcb = &lTCBs[lCurrentTcb];
+		*pTcb = (ATOM_TCB*)&lKernelMem[lKernelMemPos];
 	}
+
+	lTcbPos[lCurrentTcb++] = (ATOM_TCB*)&lKernelMem[lKernelMemPos];
 	
-	lCurrentTcb++;
+	lKernelMemPos += sizeof(ATOM_TCB);
+	lKernelMemPos += threadStack;
+	
 	return ret;
 }
 
@@ -139,4 +152,23 @@ void atomOSStart(void)
 	atomKernelStart();
 }
 
+#if ATOM_STACK_CHECKING
+
+void atomOSCheckStack()
+{
+	uint32_t ub, fb;
+	debugLog("---------\r\n");
+	for (int i = 0; i < lCurrentTcb; ++i)
+	{
+		atomThreadStackCheck(lTcbPos[i], &ub, &fb);
+		debugLog("Thread %02d: %d used, %d free\r\n", i, ub, fb);
+	}
+
+	atomThreadStackCheck(atomGetIdleTcb(), &ub, &fb);
+	debugLog("Thread %02d: %d used, %d free\r\n", -1, ub, fb);
+
+	debugLog("Total: %d of %d bytes\r\n", lKernelMemPos, ATOM_SYSTEM_MEM_SIZE);
+}
+
+#endif
 #endif

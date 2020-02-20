@@ -8,16 +8,12 @@ extern "C" {
 
 #if ATOM_SYSTEM_WRAPPER_ENABLE
 
-#ifndef ATOM_SYSTEM_STACK_SIZE
-#define ATOM_SYSTEM_STACK_SIZE 2048
+#ifndef ATOM_SYSTEM_MEM_SIZE
+#define ATOM_SYSTEM_MEM_SIZE 2048
 #endif
 
-#ifndef ATOM_SYSTEM_STACK_ATTRIBUTE
-#define ATOM_SYSTEM_STACK_ATTRIBUTE 
-#endif
-
-#ifndef ATOM_SYSTEM_MAX_THREADS
-#define ATOM_SYSTEM_MAX_THREADS 4
+#ifndef ATOM_SYSTEM_MEM_ATTRIBUTE
+#define ATOM_SYSTEM_MEM_ATTRIBUTE 
 #endif
 
 atom_status_t atomOSInit(size_t idleThreadStack, void *idleThreadParam);

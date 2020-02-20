@@ -209,6 +209,11 @@ static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb);
  * @return mili percetage of context switches to idle thread
  */
 
+ATOM_TCB *atomGetIdleTcb()
+{
+	return &idle_tcb;
+}
+
 int atomGetIdleTime()
 {
 	int p = (lContextSwitchIdle * 100000) / lContextSwitchTotal; 
