@@ -65,7 +65,7 @@
  * \n <b> Usage instructions: </b> \n
  *
  * All semaphore objects must be initialised before use by calling
- * atomSemCreate(). Once initialised atomSemGet() and atomSemPut() are used to
+ * atomSemInit(). Once initialised atomSemGet() and atomSemPut() are used to
  * decrement and increment the semaphore count respectively.
  *
  * If a semaphore count reaches zero, further calls to atomSemGet() will block
@@ -109,7 +109,7 @@ static void atomSemTimerCallback(POINTER cb_data);
 
 
 /**
- * \b atomSemCreate
+ * \b atomSemInit
  *
  * Initialises a semaphore object.
  *
@@ -126,7 +126,7 @@ static void atomSemTimerCallback(POINTER cb_data);
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameters
  */
-atom_status_t atomSemCreate(ATOM_SEM *sem, uint_fast8_t initial_count)
+atom_status_t atomSemInit(ATOM_SEM *sem, uint_fast8_t initial_count)
 {
 	atom_status_t status;
 

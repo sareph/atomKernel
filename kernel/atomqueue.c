@@ -67,7 +67,7 @@
  * \n <b> Usage instructions: </b> \n
  *
  * All queue objects must be initialised before use by calling
- * atomQueueCreate(). Once initialised atomQueueGet() and atomQueuePut() are
+ * atomQueueInit(). Once initialised atomQueueGet() and atomQueuePut() are
  * used to send and receive messages via the queue respectively.
  *
  * Messages can be added to a queue by calling atomQueuePut(). If the queue is
@@ -117,7 +117,7 @@ static void atomQueueTimerCallback(POINTER cb_data);
 
 
 /**
- * \b atomQueueCreate
+ * \b atomQueueInit
  *
  * Initialises a queue object.
  *
@@ -143,7 +143,7 @@ static void atomQueueTimerCallback(POINTER cb_data);
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameters
  */
-atom_status_t atomQueueCreate(ATOM_QUEUE *qptr, uint8_t *buff_ptr, int32_t unit_size, int32_t max_num_msgs)
+atom_status_t atomQueueInit(ATOM_QUEUE *qptr, uint8_t *buff_ptr, int32_t unit_size, int32_t max_num_msgs)
 {
 	atom_status_t status;
 
