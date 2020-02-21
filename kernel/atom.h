@@ -108,7 +108,6 @@ extern uint8_t atomOSStarted;
 #define FALSE                   0
 
 /* Error values */
-
 #define ATOM_OK                  0
 #define ATOM_ERROR              -1
 #define ATOM_TIMEOUT            -2
