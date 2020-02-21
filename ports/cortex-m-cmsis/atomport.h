@@ -66,7 +66,8 @@
 	do { \
 		if(!(x)) { __asm("bkpt 255"); } \
 	} while(0)
-	   
+
+#define atom_printf debugLog
 /**
  * Critical region protection: this should disable interrupts
  * to protect OS data structures during modification. It must

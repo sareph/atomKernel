@@ -44,6 +44,8 @@ static size_t lCurrentTcb;
 extern ATOM_TCB *atomGetIdleTcb();
 #endif
 
+#define ATOM_MEM_ALIGN(x,y) (y + ATOM_SYSTEM_MEM_AIGN - (x % ATOM_SYSTEM_MEM_AIGN))
+
 static size_t lKernelMemPos;
 static uint8_t lKernelMem[ATOM_SYSTEM_MEM_SIZE] ATOM_SYSTEM_MEM_ATTRIBUTE;
 
@@ -68,10 +70,10 @@ atom_status_t atomOSInit(size_t idleThreadStack, void *idleThreadParam)
 		return ret;
 	}
 	
-	lKernelMemPos = 0;
-	lCurrentTcb = 0;
+	lKernelMemPos = ATOM_MEM_ALIGN((uint32_t)&lKernelMem[0], 0);
 	
 #if ATOM_STACK_CHECKING
+	lCurrentTcb = 0;
 	memset(&lTcbPos[0], 0, sizeof(ATOM_TCB) * 16);
 #endif
 	
@@ -113,6 +115,12 @@ atom_status_t atomOSCreateThread(size_t threadStack, atom_prio_t priority, _fnAt
 		return ATOM_ERR_NO_MEM;
 	}
 
+	if (threadStack % ATOM_SYSTEM_MEM_AIGN)
+	{
+		atom_assert(0, "Stack memory size is not aligned");
+		return ATOM_ERR_PARAM;
+	}
+	
 	if (threadStack == 0)
 	{
 		threadStack = 1024;
@@ -156,17 +164,17 @@ void atomOSStart(void)
 void atomOSCheckStack()
 {
 	uint32_t ub, fb;
-	debugLog("---------\r\n");
+	atom_printf("---------\r\n");
 	for (int i = 0; i < lCurrentTcb; ++i)
 	{
 		atomThreadStackCheck(lTcbPos[i], &ub, &fb);
-		debugLog("Thread %02d: %d used, %d free\r\n", i, ub, fb);
+		atom_printf("Thread %02d: %d used, %d free\r\n", i, ub, fb);
 	}
 
 	atomThreadStackCheck(atomGetIdleTcb(), &ub, &fb);
-	debugLog("Thread %02d: %d used, %d free\r\n", -1, ub, fb);
+	atom_printf("Thread %02d: %d used, %d free\r\n", -1, ub, fb);
 
-	debugLog("Total: %d of %d bytes\r\n", lKernelMemPos, ATOM_SYSTEM_MEM_SIZE);
+	atom_printf("Total: %d of %d bytes\r\n", lKernelMemPos, ATOM_SYSTEM_MEM_SIZE);
 }
 
 #endif
