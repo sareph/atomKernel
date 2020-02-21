@@ -41,7 +41,7 @@ typedef struct atom_mutex
     uint8_t     count;  /* Recursive count of locks by the owner  */
 } ATOM_MUTEX;
 
-extern atom_status_t atomMutexCreate(ATOM_MUTEX *mutex);
+extern atom_status_t atomMutexInit(ATOM_MUTEX *mutex);
 extern atom_status_t atomMutexDelete(ATOM_MUTEX *mutex);
 extern atom_status_t atomMutexLock(ATOM_MUTEX *mutex, int32_t timeout);
 extern atom_status_t atomMutexUnlock(ATOM_MUTEX *mutex);

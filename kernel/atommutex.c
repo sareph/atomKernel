@@ -122,14 +122,14 @@ static void atomMutexTimerCallback(POINTER cb_data);
 
 
 /**
- * \b atomMutexCreate
+ * \b atomMutexInit
  *
  * Initialises a mutex object.
  *
  * Must be called before calling any other mutex library routines on a
  * mutex. Objects can be deleted later using atomMutexDelete().
  *
- * Does not set the owner of a mutex. atomMutexGet() must be called after
+ * Does not set the owner of a mutex. atomMutexLock() must be called after
  * creation in order to actually take ownership.
  *
  * Does not allocate storage, the caller provides the mutex object.
@@ -141,7 +141,7 @@ static void atomMutexTimerCallback(POINTER cb_data);
  * @retval ATOM_OK Success
  * @retval ATOM_ERR_PARAM Bad parameters
  */
-atom_status_t atomMutexCreate(ATOM_MUTEX *mutex)
+atom_status_t atomMutexInit(ATOM_MUTEX *mutex)
 {
 	atom_status_t status;
 
